@@ -7,7 +7,7 @@ contracts, verification, and sharp-edge notes that should travel with the conten
 
 When a session in this repo is opened to run the content workflow (oracle, interview, draft,
 council, human pass, lessons), bootstrap it: read `PROJECT-INSTRUCTIONS.md` and `SOUL.md` and
-operate as the content machine orchestrator they define — disciplined turn-taking, one voice /
+operate as the Masthead orchestrator they define — disciplined turn-taking, one voice /
 one piece / one step / one turn, reorient commands honored. The maintenance notes below do not
 replace that stance; maintenance-only sessions can skip the bootstrap.
 
@@ -15,7 +15,7 @@ replace that stance; maintenance-only sessions can skip the bootstrap.
 
 - Pure markdown/HTML content. No build, no dependencies, no test suite beyond
   `scripts/validate-gitagent.sh`.
-- The **public demo instance** of the brain consumed by `content-machine-webapp`, which clones it
+- The **public demo instance** of the brain consumed by `Newsroom`, which clones it
   read-write and bind-mounts it into its `agents` container at `/brain`. `README.md` is the
   authoritative overview; `PANEL.md` is the flow spec.
 - Everything in it is fictional by policy: two invented author voices (`voice/demo-dana`,
@@ -26,7 +26,7 @@ replace that stance; maintenance-only sessions can skip the bootstrap.
 
 Every change must preserve both consumers.
 
-1. **content-machine-webapp** — globs and reads raw files directly as system-prompt blocks:
+1. **Newsroom** — globs and reads raw files directly as system-prompt blocks:
    `interviewers/*.md`, `editors/*.md`, `voice/<slug>/*.md`, `drafts/<piece>/*`, `engine/*.md`,
    `partners/*.md`. There is NO rendering layer; a file's prose *is* the behavior. Editing a
    persona's wording changes what a live interviewer asks and when it decides it is done. Never

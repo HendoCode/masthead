@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "=== Content Machine Brain — GitAgent Launcher ==="
+echo "=== Masthead Brain — GitAgent Launcher ==="
 echo "Repo: ${SCRIPT_DIR}"
 echo
 
@@ -28,7 +28,7 @@ if [[ ! -d "${SCRIPT_DIR}/memory" ]]; then
 fi
 if [[ ! -f "${SCRIPT_DIR}/memory/MEMORY.md" ]]; then
   cat > "${SCRIPT_DIR}/memory/MEMORY.md" <<'EOF'
-# Content Machine Memory
+# Masthead Memory
 
 ## Session Context
 

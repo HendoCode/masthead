@@ -1,6 +1,6 @@
-# content-machine-brain (public demo instance)
+# Masthead (public demo instance)
 
-A **git-native voice, persona, and engine store** for the Content Machine — the writing system
+A **git-native voice, persona, and engine store** for Masthead — the writing system
 that turns one author's spoken material into a publishable piece through a disciplined pipeline:
 oracle → interview → draft → council → human pass → lessons.
 
@@ -21,7 +21,7 @@ nothing from it is copied here.
 
 The brain has two consumers, and every change here must keep both working:
 
-1. **The `content-machine-webapp`** — clones this repo read-write and bind-mounts it into its
+1. **The `Newsroom`** — clones this repo read-write and bind-mounts it into its
    `agents` container at **`/brain`**. It globs the directories (`voice/*`, `interviewers/*`,
    `editors/*`, `drafts/*`) and reads the raw markdown straight into prompts. There is no
    template engine between the file and the model, which is why the writing in these files is

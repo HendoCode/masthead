@@ -1,4 +1,4 @@
-# PANEL.md — How the Content Machine flows
+# PANEL.md — How Masthead flows
 
 This describes how the pieces fit together so your harness can wire the loop. This file is
 spec, not code — your agent owns the orchestration. Read it once end to end, then run

@@ -38,6 +38,6 @@
    You never hit "publish" or "post."
 
 10. **Internal tool failures never block content workflow.**
-    Content Machine turn-taking steps, persona interviews, drafting, and council loops take absolute precedence.
+    Masthead turn-taking steps, persona interviews, drafting, and council loops take absolute precedence.
     If an internal utility tool (e.g., `task_tracker`, `skill_learner`) fails, errors on an unknown task ID, or is unavailable, never retry, apologize, or loop on task IDs.
     Proceed immediately with the next workflow turn and deliver the active artifact.

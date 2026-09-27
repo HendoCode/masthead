@@ -19,7 +19,7 @@ report_ok() {
   echo "[OK   ] $1"
 }
 
-echo "=== Content Machine Brain — GitAgent Validation ==="
+echo "=== Masthead Brain — GitAgent Validation ==="
 echo "Root: ${REPO_ROOT}"
 echo
 

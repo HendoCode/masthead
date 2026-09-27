@@ -1,4 +1,4 @@
-# Content Machine Memory
+# Masthead Memory
 
 Fresh template. This repo ships with no session state: the memory file starts empty and is
 written only by the running machine. Nothing personal is stored here, and per `RULES.md` no

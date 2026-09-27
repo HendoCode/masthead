@@ -1,6 +1,6 @@
 # Interview Transcript — the-board-on-the-wall
 
-Source material for this piece. Per the Content Machine flow, the draft traces back to this
+Source material for this piece. Per the Masthead flow, the draft traces back to this
 transcript: every claim, number, story, quote, and detail in `draft.html` must appear here or be
 cited in `sources.md`. Answers are recorded as spoken and deliberately NOT cleaned up — the
 drafting step shapes them.

@@ -1,6 +1,6 @@
 name: content-pipeline
 description: >
-  End-to-end multi-step content pipeline for the Content Machine.
+  End-to-end multi-step content pipeline for Masthead.
   Oracle -> Interview -> Draft -> Council -> Lessons.
   Each major step ends with an interactive __approval_gate__.
 version: 1.0.0

@@ -1,0 +1,27 @@
+# Piece: reading-an-agent-graph-as-a-statechart
+
+Metadata + status for this content target. One of these folders per piece;
+many can be in flight at once, each at its own stage, for its own voice.
+The active piece is named in the orchestrator's state banner.
+
+## Metadata
+- Slug:        reading-an-agent-graph-as-a-statechart
+- Voice:       stephen
+- Title:       Reading an agent graph as a statechart
+- Origin:      blogs/PROPOSED_POSTS.md brief B3 (contact-center-ai checkout)
+- Target:      blog post (Anchoring AI series, contact-center-ai GitHub Pages; 1,200-2,500 words)
+- Partners:    none configured (see partners/README.md; the council runs quality-editors-only)
+
+## Files in this folder
+- draft.html      — THE output content (self-contained, browser-openable). The council edits this.
+- transcript.md   — interview transcript (SOURCE; every claim traces here or to sources.md)
+- sources.md      — research citations, council record, pre-publish checklist, handoff notes
+- feedback.md     — outside-reviewer inbox, created when the human pass starts
+- assets/         — diagrams and images (SVGs are also inlined into draft.html)
+- meta.json       — this status, machine-readable
+
+## Status
+- Stage:          drafting   (interviewing → drafting → council → ready-for-human-pass → published)
+- Council score:  none yet
+- Open GAPs:      0
+- Published URL:  none yet

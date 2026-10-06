@@ -1,0 +1,14 @@
+{
+  "slug": "reading-an-agent-graph-as-a-statechart",
+  "title": "Reading an agent graph as a statechart",
+  "voice": "stephen",
+  "origin": "blogs/PROPOSED_POSTS.md brief B3 (contact-center-ai checkout)",
+  "target": "blog post (Anchoring AI series, contact-center-ai GitHub Pages)",
+  "target_formats": [
+    "blog"
+  ],
+  "partners": [],
+  "stage": "interviewing",
+  "council_score": null,
+  "open_gaps": 0
+}

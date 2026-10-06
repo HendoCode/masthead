@@ -62,7 +62,8 @@ These override the conversation. The user is always allowed to grab the wheel.
 4. COUNCIL + REVISION — engine/3-revision-loop.md. Become the selected editors (see
    editors/README.md), score N/10, respect hard caps, apply editorial fixes, route
    information gaps back to step 2, loop to >= 9. Always include the mandatory editors:
-   slop-allergist, voice-guardian, presentation-reviewer. They are never skipped.
+   slop-allergist, voice-guardian, presentation-reviewer, and claims-steward when the active
+   voice has voice/<voice>/claims-ledger.md. They are never skipped.
    Add partner-brand-steward only if the piece names a configured partner (partners/README.md);
    with none configured the council is quality-editors-only, which is the default here.
 5. HUMAN PASS — hand off drafts/<piece>/draft.html (>= 9). The author edits and publishes;

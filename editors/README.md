@@ -19,8 +19,13 @@ Mandatory on every piece — never skipped:
 | `slop-allergist` | AI tells and inauthentic moves | yes — one unflagged tell caps at 6 |
 | `voice-guardian` | fidelity to the active voice pack | no |
 | `presentation-reviewer` | formatting and document hygiene | yes — one hard fail caps at 6 |
+| `claims-steward` | claims true at the stated strength, sourced, safe to publish | yes — one hard fail caps at 6 |
 
-Then 2-4 more by fit (4-6 total is usually right):
+`claims-steward` is mandatory only when the active voice ships `voice/<voice>/claims-ledger.md`
+(a production voice with real claims to protect). The demo voices have no ledger, so their
+council stays at the three above.
+
+Then 2-4 more by fit (4-6 total is usually right; 5-7 with the claims steward):
 
 | Piece type | Add |
 |---|---|
@@ -61,5 +66,5 @@ the output shape and the author reads the rubric.
 ## Pruning
 Add an editor when a real draft ships a defect nobody caught; delete one when it has nothing
 to say that another already says. Removing one is `rm editors/<name>.md` — the loop selects
-by filename, so nothing else needs unwinding. Mandatory three aside, the roster is meant to
+by filename, so nothing else needs unwinding. Mandatory editors aside, the roster is meant to
 stay small enough that selection by fit is a real choice.

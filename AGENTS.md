@@ -38,7 +38,8 @@ Every change must preserve both consumers.
 
 ## Contracts that are easy to break silently
 
-- **Directory and filename shapes.** `voice/<slug>/{voice-guide,style-guide,content-lessons}.md`;
+- **Directory and filename shapes.** `voice/<slug>/{voice-guide,style-guide,content-lessons}.md`,
+  plus an optional `claims-ledger.md` (its presence makes `editors/claims-steward.md` mandatory);
   `drafts/<piece>/{piece.md,transcript.md,sources.md,draft.html,meta.json,assets/}`;
   `engine/{1-oracle,2-draft,3-revision-loop,4-lessons-loop,feedback-intake,research-sidecar}.md`;
   `skills/<name>/SKILL.md`; `partners/<slug>.md`. Scaffold with `scripts/new-piece.sh` rather
@@ -54,9 +55,19 @@ Every change must preserve both consumers.
 - **The `done-when` test is what makes a panel stoppable.** An interviewer file without one makes
   the orchestrator guess when to move on, which is the drift failure mode the whole stance exists
   to prevent.
-- **The 9/10 council bar and the hard caps** (`slop-allergist`, `technical-reviewer`,
+- **The 9/10 council bar and the hard caps** (`slop-allergist`, `technical-reviewer`, `claims-steward`,
   `presentation-reviewer`) are the mechanism, not decoration. A demo piece that clears 9 on the
   first round teaches a reader nothing; keep at least one piece visibly failing and looping.
+
+## Local branch `local/stephen-voice-kit` (private overlay; never push, never merge to main)
+
+This branch adds Stephen Henderson's real voice pack (`voice/stephen/`), the
+`claims-steward` editor, and `PROPOSED-LESSONS-stephen.md`, so the content workflow can run on
+real pieces from a local checkout. It deliberately breaks the demo-boundary rules below, and
+`scripts/verify-public-clean.sh` is expected to report it. Engine and editor changes that are
+voice-neutral (the conditional claims steward, the slop-allergist override hook, the "Must not
+claim" section in `scripts/new-piece.sh`) could be cherry-picked to main later; the personal
+files never can. Real pieces written on this branch stay on this branch.
 
 ## Demo-boundary rules (non-negotiable here)
 

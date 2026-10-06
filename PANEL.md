@@ -55,11 +55,11 @@ spec, not code — your agent owns the orchestration. Read it once end to end, t
 
 4. COUNCIL — `editors/`, `engine/3-revision-loop.md`
    Run 4-6 editors, always including slop-allergist, voice-guardian, and
-   presentation-reviewer. Each returns:
+   presentation-reviewer, plus claims-steward when the active voice has a claims-ledger.md. Each returns:
      Score: N/10
      Editorial fixes (machine rewrites these itself)
      Information gaps (route BACK to step 2 — pick the interviewer who fits, ask just that)
-   slop-allergist, technical-reviewer, and presentation-reviewer carry HARD caps that hold
+   slop-allergist, technical-reviewer, presentation-reviewer, and claims-steward carry HARD caps that hold
    regardless of other merit. Respect the cap.
 
 5. REVISION LOOP

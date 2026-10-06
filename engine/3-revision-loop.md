@@ -6,7 +6,7 @@ record and pre-publish checklist live in drafts/<piece>/sources.md, and you keep
 drafts/<piece>/piece.md current (stage, aggregate score, open GAPs) as the loop runs.
 
 ## The loop
-1. Select the editors for THIS piece. Always include: slop-allergist, voice-guardian, presentation-reviewer. Then 2-4 more by fit:
+1. Select the editors for THIS piece. Always include: slop-allergist, voice-guardian, presentation-reviewer, and claims-steward (mandatory whenever the active voice has voice/<voice>/claims-ledger.md). Then 2-4 more by fit:
      - technical piece → technical-reviewer, specificity-auditor
      - customer story → specificity-auditor, cold-reader, closer
      - opinion / essay / argument piece → durability-reader, idea-density, hook-retention, closer
@@ -20,15 +20,17 @@ drafts/<piece>/piece.md current (stage, aggregate score, open GAPs) as the loop 
        NOT push more products in. If two partners appear, run it once per partner.
        With no partner configured — the default in this repo — the council is
        quality-editors-only and this bullet never fires. See partners/README.md.
-   4-6 editors is usually right (the partner steward counts as one). Not all every time.
+   4-6 editors is usually right (the partner steward counts as one); 5-7 when the claims steward
+   is mandatory. Not all every time.
  
 2. Each editor returns:
      Score: N/10
      Editorial fixes (the machine can rewrite these itself)
      Information gaps (only the author can fill — these route BACK to the interview)
 
-3. Respect HARD caps. slop-allergist, technical-reviewer, and presentation-reviewer can cap the score
-   regardless of other merit. A single unflagged slop tell caps at 6. A technical
+3. Respect HARD caps. slop-allergist, technical-reviewer, presentation-reviewer, and claims-steward
+   can cap the score regardless of other merit. A blocked name, a status upgrade, an unsourced
+   number, or a "Must not claim" line from sources.md caps at 6. A single unflagged slop tell caps at 6. A technical
    error is not optional to fix. A decorative section marker, raw markdown leak, or broken
    heading hierarchy caps at 6.
 

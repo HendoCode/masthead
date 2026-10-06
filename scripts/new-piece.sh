@@ -109,6 +109,10 @@ checklist. Written so the author can edit the draft directly without losing prov
 ## Research citations (every figure in the draft traces here)
 - (none yet — mark unverifiable claims [GAP: need source] rather than asserting them)
 
+## Must not claim
+- (copy the post brief's "Must not claim" lines here at intake; editors/claims-steward.md
+  enforces them. Leave this list empty only if the brief has none.)
+
 ## Council record
 - Round 1: (not run)
 

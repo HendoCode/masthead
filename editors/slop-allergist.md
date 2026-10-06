@@ -8,7 +8,10 @@ voice/<active-voice>/voice-guide.md for a "Sanctioned patterns" list. If the act
 explicitly sanctions a pattern below (in this repo's demo suite, `demo-mira` sanctions
 scene-setting openers and first-person reflection, while `demo-dana` sanctions blunt
 verdict lines, inline code, and "X, not Y" contrast framing used to draw a technical
-distinction), do NOT flag or cap on it — that is the intended register. The UNIVERSAL fails still apply to every voice: presuppose-and-dismantle,
+distinction), do NOT flag or cap on it — that is the intended register. If the active voice
+guide has a "For the slop-allergist" section, it overrides the default allowances here: when it
+bans a pattern this file tolerates (for example, contrast framing allowed zero times, or no em
+dashes at all), treat each occurrence as a hard fail. The UNIVERSAL fails still apply to every voice: presuppose-and-dismantle,
 empty adjectives standing in for evidence, self-labeling, hype/superlatives with no number
 behind them, fake precision, and hedged non-verdicts. When in doubt, a sanctioned pattern
 used as filler (not to sharpen) is still a fix — just not a hard cap.

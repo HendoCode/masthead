@@ -59,8 +59,10 @@ Every change must preserve both consumers.
   `presentation-reviewer`) are the mechanism, not decoration. A demo piece that clears 9 on the
   first round teaches a reader nothing; keep at least one piece visibly failing and looping.
 
-## Local branch `local/stephen-voice-kit` (private overlay; never push, never merge to main)
+## Branch `local/stephen-voice-kit` (private overlay; pushed so other sessions can read it; NEVER merge to main)
 
+This branch is on GitHub so other agent sessions can use it. Never open a PR from it to main,
+never merge or rebase it into main, and delete it from GitHub before the repo is made public.
 This branch adds Stephen Henderson's real voice pack (`voice/stephen/`), the
 `claims-steward` editor, and `PROPOSED-LESSONS-stephen.md`, so the content workflow can run on
 real pieces from a local checkout. It deliberately breaks the demo-boundary rules below, and

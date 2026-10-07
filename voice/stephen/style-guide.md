@@ -84,6 +84,27 @@ elsewhere. Captions state the point of the diagram.
 - Hendo Code, as the name he publishes under.
 - No mandatory call to action. A post may end with the repo link and the command to run it.
 
+## Headings and titles
+Every title and heading is literal, descriptive and functional: a reader knows what the section
+contains before reading it. Front-load the subject and the action or result, in plain professional
+language. A heading names the subject and says what the section does with it (how it works, what
+was measured, what was excluded and why). A heading that needs the body to be understood fails.
+
+Never use: literary or atmospheric fragments, narrative placeholders, vague noun phrases, a
+prepositional fragment that omits the subject or action, "The anatomy of X," or any metaphor.
+(A metaphor or analogy belongs in the body, never in a heading; see `voice-guide.md`.)
+
+| Blocked (cryptic) | Allowed (literal, functional) |
+|---|---|
+| "Where the wait lives" | How Paused Agent States are Persisted in Postgres |
+| "The bench under test" | Testing Environment and Dataset Parameters |
+| "Two recall numbers" | Evaluating Capped Recall vs. ANN Recall Metrics |
+| "A discarded early run" | Excluding the Initial Non-Comparable Benchmark Run |
+
+Outline rule: when deciding sections and flow, write each heading first as a sentence saying what
+the reader learns there, then trim it to a heading. Headings state the information or result; they
+do not tease it. Existing rules still apply: no heading starts with "What," no decorative glyphs.
+
 ## Presentation hygiene
 Checked by `editors/presentation-reviewer.md`:
 - One `<h1>`, `<h2>` for sections, `<h3>` for subdivisions, no skipped levels.

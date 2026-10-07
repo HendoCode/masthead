@@ -20,12 +20,17 @@ Mandatory on every piece — never skipped:
 | `voice-guardian` | fidelity to the active voice pack | no |
 | `presentation-reviewer` | formatting and document hygiene | yes — one hard fail caps at 6 |
 | `claims-steward` | claims true at the stated strength, sourced, safe to publish | yes — one hard fail caps at 6 |
+| `headline-utility` | every title and heading literal, descriptive, functional | yes — one cryptic heading caps at 6 |
 
 `claims-steward` is mandatory only when the active voice ships `voice/<voice>/claims-ledger.md`
 (a production voice with real claims to protect). The demo voices have no ledger, so their
 council stays at the three above.
 
-Then 2-4 more by fit (4-6 total is usually right; 5-7 with the claims steward):
+`headline-utility` is likewise conditional: mandatory only when the active voice's `style-guide.md`
+has a "Headings and titles" section. It carries a hard cap (a cryptic heading caps at 6). The demo
+voices have no such section, so it never runs for them.
+
+Then 2-4 more by fit (4-6 total is usually right; 5-8 with both conditional editors):
 
 | Piece type | Add |
 |---|---|

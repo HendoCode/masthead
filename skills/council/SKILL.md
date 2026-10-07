@@ -8,7 +8,8 @@ allowed-tools: read write cli
 
 Runs the editorial council loop over `drafts/<piece>/draft.html`.
 Mandatory editors: `slop-allergist`, `voice-guardian`, `presentation-reviewer`, and
-`claims-steward` when the active voice has `voice/<voice>/claims-ledger.md`.
+`claims-steward` when the active voice has `voice/<voice>/claims-ledger.md`, and `headline-utility`
+when its `style-guide.md` has a "Headings and titles" section.
 Scores >= 9/10 required before publication handoff.
 
 ## Triggers
@@ -24,7 +25,7 @@ Scores >= 9/10 required before publication handoff.
 2. Evaluate the draft against each selected editor persona in `editors/*.md`.
 3. Score each dimension out of 10 and enforce the mandatory checks (`slop-allergist`,
    `voice-guardian`, `presentation-reviewer`, plus `claims-steward` when the voice has a claims
-   ledger) and every hard cap they raise. Add
+   ledger and `headline-utility` when the style guide has heading rules) and every hard cap they raise. Add
    `partner-brand-steward` only when the piece names a configured partner, and then enforce
    the naming and brand rules in `partners/<partner>.md` (see `partners/README.md`).
 4. Apply editorial revisions directly or route information gaps back to Step 2 (Interview).

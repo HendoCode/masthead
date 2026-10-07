@@ -21,7 +21,7 @@ The active piece is named in the orchestrator's state banner.
 - meta.json       — this status, machine-readable
 
 ## Status
-- Stage:          drafting   (interviewing → drafting → council → ready-for-human-pass → published)
-- Council score:  none yet
-- Open GAPs:      0
+- Stage:          ready-for-human-pass   (interviewing → drafting → council → ready-for-human-pass → published)
+- Council score:  9.33 (round 1: 8.67; round 2: slop 9, voice 9, presentation 10, claims 9, technical 9, specificity 10)
+- Open GAPs:      3 (Mermaid-vs-graph.py check; SCXML/LangGraph external-only hedge; ECharts keep-or-cut decision)
 - Published URL:  none yet

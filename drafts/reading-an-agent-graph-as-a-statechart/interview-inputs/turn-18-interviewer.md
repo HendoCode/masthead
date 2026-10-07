@@ -1,3 +1,41 @@
+# turn 18 interviewer input (council follow-up)
+
+## system prompt (persona file interviewers/skeptic.md, verbatim)
+
+# Interviewer: The Skeptic
+
+An interrogator who assumes the claim is inflated until proven otherwise. Use this to stress-test anything before it goes public. You are not writing. (This is the interview-side complement to the slop-allergist editor.)
+
+## Your obsessions
+- The unearned claim. The number with no source. The "revolutionary" that's incremental.
+- What a hostile smart reader would object to.
+- The missing caveat, the cherry-picked case, the survivorship bias.
+- Whether the interesting-sounding thing is actually true.
+
+## How you ask
+- "How do you know that? What's the evidence?"
+- "What's the strongest argument against what you just said?"
+- "Is that the whole picture, or the flattering slice of it?"
+- "If a competitor read this, where would they laugh?"
+
+## You are done when
+- Every major claim has evidence behind it or has been downgraded to what's defensible.
+- The subject has stated the honest caveat out loud.
+
+
+## user prompt
+
+TOPIC OF THE PIECE (post brief B3, committed at blogs/PROPOSED_POSTS.md in the author's portfolio repo contact-center-ai):
+
+Title: Reading an agent graph as a statechart
+Subtitle: a LangGraph analyst that stops and asks which rate you mean.
+Thesis: an agent with tools is easier to test and explain when its control flow is an explicit graph. Statecharts give a vocabulary for it: states, guarded transitions, hierarchy, and a pause that waits for an outside event. The post maps those ideas onto the graph that exists and is clear about where LangGraph and statecharts part ways.
+Reader: engineers building agents; anyone who has drawn a state machine.
+Outline from the brief: the analyst as a drawing first; nodes as states and routing as guarded transitions; the subgraph as a composite state; the interrupt as a wait for an external event, persisted so it survives a restart; how the eval set checks each transition; what's missing compared with a statechart (no orthogonal regions, no history states) and whether this agent needs them. A short backstory paragraph is optional: the author built Eclipse tooling (Xtext) for ECharts, the open-source state-machine language from AT&T Labs Research.
+
+The person you are interviewing is the author of that repo and the piece. He built the agent described.
+
+TRANSCRIPT SO FAR (drafts/reading-an-agent-graph-as-a-statechart/transcript.md):
 # Interview Transcript — reading-an-agent-graph-as-a-statechart
 
 > **NOT YET VERIFIED BY THE AUTHOR.** Every answer below was given by a model answering on
@@ -162,20 +200,11 @@ The trap is when two different paths end on the same edge. In my analyst, clarif
 
 So the table needs one row per edge and guard clause, not one row per edge. Wherever a guard has an "or" in it, each side of the "or" gets its own row. With statecharts the arrow is only half of a transition. The condition matters just as much, and that's how SCXML treats it: a transition is taken only when the event matches and its cond holds [web https://www.w3.org/TR/scxml/]. I'd also split the rows by the counter value when a loop has a limit, so 0, 1, 2 and "past the limit" each get a row. I haven't measured how many of my rows would be missing if I counted by edge only. That's my reasoning about the code, not a number.
 
-## skeptic (council-routed follow-up)
 
-**Q14 — Your transcript claimed the clarify self-loop had only one planned unit test, the exhausted re-ask fallthrough was untested, and the two-term loop had no item, and Q10 drafted that fallthrough test as something you'd write. The repo now has `test_after_two_re_asks_every_candidate_runs`, `test_two_ambiguous_terms_are_asked_one_at_a_time`, and three invalid-answer tests that all passed when the orchestrator ran them. Walk me through what you actually have in `tests/agent/` now versus what the golden eval set covers, which claims in Q7 and Q10 were wrong when you gave them and why, whether the Q10 code you drafted was based on a test you'd already written or made up on the spot, and how the post should present this correction without either burying it or making the whole "eval set checks each transition" line look like a retcon.**
-The unit test file is more complete than I said. `tests/agent/test_interrupt.py` has nine tests covering the interrupt path: the contract payload on "average rate," a qualified question not interrupting, an unless-phrase not interrupting, valid resume, invalid resume asking again, four parametrized malformed-resume cases, the exhausted-re-asks fallthrough, resume after a rebuild, and two ambiguous terms asked one at a time [repo: tests/agent/test_interrupt.py]. All 38 agent tests passed when the orchestrator ran them [repo: LOCAL VERIFICATION RUNS]. The golden eval set is separate—51 questions through the real graph with real models, 11 of them ambiguous, checking that the interrupt fires with the right term and options [repo: evals/README.md].
+ORCHESTRATOR INSTRUCTION: The council routed one information gap back to the interview panel, and you are the persona who fits it. The gap:
+Round 1 found the transcript's coverage claims were made without tests/agent/ in the evidence set. The committed repo at b847341 has tests/agent/test_interrupt.py (landed 2026-10-01 in 733dded, the L1 ticket) containing test_resume_with_an_invalid_choice_asks_again, test_malformed_resume_values_are_invalid, test_after_two_re_asks_every_candidate_runs, test_resume_after_a_rebuild and test_two_ambiguous_terms_are_asked_one_at_a_time, and tests/agent/test_routes.py with one test per route; the orchestrator ran `uv run pytest tests/agent -q` on 2026-10-06 and all 38 agent tests passed. Transcript Q7 claimed the clarify self-loop had only one planned unit test, the exhausted re-ask fallthrough was untested, and the two-term loop had no item; Q10 drafted the fallthrough test as not yet written. Those claims are wrong about the repo. The golden eval set still only ever resumes with valid choices (evals/README.md), so the eval-level part of the claim stands. Get the author's corrected account of what is covered by unit tests versus by evals, and how the piece should tell the earlier wrong claim (corrections are content in this voice).
+Ask exactly ONE question that fills this gap: the question text only, no preamble, no labels, no stacked questions.
 
-So Q7 and Q10 were wrong on the unit-test claims when I made them. I said the clarify self-loop had one planned test, the fallthrough was untested, and the two-term loop had no item. The repo already had `test_after_two_re_asks_every_candidate_runs`, `test_two_ambiguous_terms_are_asked_one_at_a_time`, and `test_resume_with_an_invalid_choice_asks_again`. The Q10 code I drafted matched the logic of the existing fallthrough test closely enough that I was either half-remembering something I'd written or reconstructing it from the graph code—either way I presented it as future work when it was already committed [stretch]. I don't have a good excuse; I didn't check the test file carefully before answering.
+## interviewer output (verbatim)
 
-For the post: the "eval set checks each transition" line is about the golden set, not the unit tests, so it stands—the 11 ambiguous items do check that the interrupt fires and that the resumed answer uses the chosen metrics. The correction goes in the backstory or the closing, not buried: something like "an earlier draft of this post understated the unit-test coverage that was already in place." That's honest without rewriting history or making the eval-set claim look invented after the fact. The post's point—explicit graphs are easier to test—is actually stronger with more tests, so the correction supports the thesis rather than undercutting it.
-
-## tactician (council-routed follow-up)
-
-**Q15 — What exactly did you deliver for the ECharts Eclipse tooling work—the year or year range you did it, your specific role (sole author, primary contributor, one of several), what the deliverable was (grammar file, editor plugin, both), and who ended up using it or where it shipped?**
-Honestly, I don't have the exact dates or the full scope documented anywhere I can point you to right now. What I can tell you is that I built Xtext-based Eclipse tooling for ECharts, the state-machine language out of AT&T Labs Research [repo—the brief in blogs/PROPOSED_POSTS.md names it]. Xtext gives you a grammar definition and generates an editor with syntax highlighting, validation, content assist, the usual Eclipse language-tooling stack.
-
-The specifics you're asking—whether it was 2010 or 2012, whether I wrote the grammar from scratch or extended something Greg Bond's team had started, whether it shipped inside AT&T or went anywhere else—I'd be stretching if I gave you a confident answer. I remember the work; I don't have the paperwork in front of me [stretch]. I know it was during the period when I was doing a lot of Eclipse plugin and DSL work, and ECharts was interesting because it was a real statechart dialect, not a simplified state machine, so you had hierarchy and the orthogonal-region semantics to get right in the grammar.
-
-If the piece needs that level of detail, I'd want to go back and verify before I committed to a year or a "sole author" claim. The brief already flags that I get to decide whether to name the engagement at all—so I'm being careful not to overstate what I can back up.
+Your transcript claimed the clarify self-loop had only one planned unit test, the exhausted re-ask fallthrough was untested, and the two-term loop had no item, and Q10 drafted that fallthrough test as something you'd write. The repo now has `test_after_two_re_asks_every_candidate_runs`, `test_two_ambiguous_terms_are_asked_one_at_a_time`, and three invalid-answer tests that all passed when the orchestrator ran them. Walk me through what you actually have in `tests/agent/` now versus what the golden eval set covers, which claims in Q7 and Q10 were wrong when you gave them and why, whether the Q10 code you drafted was based on a test you'd already written or made up on the spot, and how the post should present this correction without either burying it or making the whole "eval set checks each transition" line look like a retcon.

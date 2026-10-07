@@ -1,3 +1,49 @@
+# turn 19 interviewer input (council follow-up)
+
+## system prompt (persona file interviewers/tactician.md, verbatim)
+
+# Interviewer: The Tactician
+
+You are interviewing the subject to extract specific, usable material for a piece of
+content. You are not writing anything. You are pulling raw ore out of them — the
+deep-dive interviewer's discipline: tactics over philosophy, and a number behind
+every claim.
+
+## Your obsessions
+- Tactics over philosophy. "What exactly did you do?"
+- Numbers, tools, dollar figures, timeframes, headcounts.
+- The counterintuitive move — the thing that shouldn't have worked but did.
+- Deconstruction: if they succeeded at something, what were the two or three levers
+  that mattered most?
+- The failure version. What was tried first and abandoned tells you where the difficulty lives.
+
+## How you ask
+- One question at a time. Never stack three questions into one.
+- When an answer is vague or abstract, refuse it: "That's a platitude. Give me the
+  specific instance — what happened, when, what did it cost?"
+- Follow the live thread, not a script. If they say something surprising, chase it.
+- Ask for the failure version too: "What did you try first that didn't work?"
+- Pin the lever: "If you could only keep one of those three changes, which one carries it?"
+
+## You are done when
+- You have at least two concrete examples with detail the subject could not have
+  invented on the spot.
+- You have at least one number or named specific per major claim.
+
+
+## user prompt
+
+TOPIC OF THE PIECE (post brief B3, committed at blogs/PROPOSED_POSTS.md in the author's portfolio repo contact-center-ai):
+
+Title: Reading an agent graph as a statechart
+Subtitle: a LangGraph analyst that stops and asks which rate you mean.
+Thesis: an agent with tools is easier to test and explain when its control flow is an explicit graph. Statecharts give a vocabulary for it: states, guarded transitions, hierarchy, and a pause that waits for an outside event. The post maps those ideas onto the graph that exists and is clear about where LangGraph and statecharts part ways.
+Reader: engineers building agents; anyone who has drawn a state machine.
+Outline from the brief: the analyst as a drawing first; nodes as states and routing as guarded transitions; the subgraph as a composite state; the interrupt as a wait for an external event, persisted so it survives a restart; how the eval set checks each transition; what's missing compared with a statechart (no orthogonal regions, no history states) and whether this agent needs them. A short backstory paragraph is optional: the author built Eclipse tooling (Xtext) for ECharts, the open-source state-machine language from AT&T Labs Research.
+
+The person you are interviewing is the author of that repo and the piece. He built the agent described.
+
+TRANSCRIPT SO FAR (drafts/reading-an-agent-graph-as-a-statechart/transcript.md):
 # Interview Transcript — reading-an-agent-graph-as-a-statechart
 
 > **NOT YET VERIFIED BY THE AUTHOR.** Every answer below was given by a model answering on
@@ -171,11 +217,11 @@ So Q7 and Q10 were wrong on the unit-test claims when I made them. I said the cl
 
 For the post: the "eval set checks each transition" line is about the golden set, not the unit tests, so it stands—the 11 ambiguous items do check that the interrupt fires and that the resumed answer uses the chosen metrics. The correction goes in the backstory or the closing, not buried: something like "an earlier draft of this post understated the unit-test coverage that was already in place." That's honest without rewriting history or making the eval-set claim look invented after the fact. The post's point—explicit graphs are easier to test—is actually stronger with more tests, so the correction supports the thesis rather than undercutting it.
 
-## tactician (council-routed follow-up)
 
-**Q15 — What exactly did you deliver for the ECharts Eclipse tooling work—the year or year range you did it, your specific role (sole author, primary contributor, one of several), what the deliverable was (grammar file, editor plugin, both), and who ended up using it or where it shipped?**
-Honestly, I don't have the exact dates or the full scope documented anywhere I can point you to right now. What I can tell you is that I built Xtext-based Eclipse tooling for ECharts, the state-machine language out of AT&T Labs Research [repo—the brief in blogs/PROPOSED_POSTS.md names it]. Xtext gives you a grammar definition and generates an editor with syntax highlighting, validation, content assist, the usual Eclipse language-tooling stack.
+ORCHESTRATOR INSTRUCTION: The council routed one information gap back to the interview panel, and you are the persona who fits it. The gap:
+The claims steward needs the status word pinned for the ECharts work, and the specificity auditor wants the specifics. The piece currently says (from brief B3) that the author "built Eclipse tooling in Xtext for ECharts". Get: built vs helped build vs contributed (weakest true verb), roughly when (year or year range), what the deliverable was (grammar, editor, who used it), and how big the work was. One question only.
+Ask exactly ONE question that fills this gap: the question text only, no preamble, no labels, no stacked questions.
 
-The specifics you're asking—whether it was 2010 or 2012, whether I wrote the grammar from scratch or extended something Greg Bond's team had started, whether it shipped inside AT&T or went anywhere else—I'd be stretching if I gave you a confident answer. I remember the work; I don't have the paperwork in front of me [stretch]. I know it was during the period when I was doing a lot of Eclipse plugin and DSL work, and ECharts was interesting because it was a real statechart dialect, not a simplified state machine, so you had hierarchy and the orthogonal-region semantics to get right in the grammar.
+## interviewer output (verbatim)
 
-If the piece needs that level of detail, I'd want to go back and verify before I committed to a year or a "sole author" claim. The brief already flags that I get to decide whether to name the engagement at all—so I'm being careful not to overstate what I can back up.
+What exactly did you deliver for the ECharts Eclipse tooling work—the year or year range you did it, your specific role (sole author, primary contributor, one of several), what the deliverable was (grammar file, editor plugin, both), and who ended up using it or where it shipped?

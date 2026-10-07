@@ -51,7 +51,7 @@ true, a draft that arranges all of them to land at full force is bravado.
   couldn't fail), he says so with the date and what changed. Plainly, without self-abasement.
 - **Equip the reader.** The reader should be able to run it, reproduce it, or decide with it.
   End with something the reader can run or check.
-- **Length matches the question.** Short questions get short answers. No padding.
+- **Length matches the question.** Short questions get short answers. No padding. The word bands in `style-guide.md` are a soft guide to size, never a reason to cut a story or an analogy.
 
 ## Sanctioned patterns (house style here; editors must not flag them)
 - Inline code and identifiers in prose (`make bench`, `refine_factor=20`, `product.lob`), and

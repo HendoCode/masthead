@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>One Metric, Three Warehouses: Five MetricFlow Metrics Compared on Postgres, Snowflake and Databricks</title>
+<title>Semantics Parity Check: Five Metrics Compared Across Postgres, Snowflake and Databricks</title>
 <style>
   :root {
     --background: #fdfdfc;
@@ -113,7 +113,7 @@
 <body>
 <article>
   <p class="kicker">Anchoring AI</p>
-  <h1>One Metric, Three Warehouses: Five MetricFlow Metrics Compared on Postgres, Snowflake and Databricks</h1>
+  <h1>Semantics Parity Check: Five Metrics Compared Across Postgres, Snowflake and Databricks</h1>
   <p class="dek">Five metrics from the semantic layer ran on Postgres, Snowflake and Databricks and returned the same values within stated tolerances. This post covers how the check runs, what the saved SQL shows, what the Apache Ossie export loses, and what the check did not cover.</p>
 
   <p>The first full live run of the agent evals in contact-center-ai scored 0.00 on SQL. The per-item export showed why: every metric item had answered with an error, a Postgres <code>syntax error at or near</code> a backtick in <code>FROM `ccai`.`marts`.`f_account_snapshot`</code>. The manifest that MetricFlow reads had last been written by a Databricks build, which quotes relations with backticks, and the metric tool ran that SQL against the local Postgres. The cause was the environment. The dialect difference was still real, and it raised a question I could now test: do the metric definitions return the same numbers on all three warehouses?</p>

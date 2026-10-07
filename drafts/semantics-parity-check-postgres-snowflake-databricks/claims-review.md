@@ -1,4 +1,4 @@
-# Claims review — one-metric-three-warehouses
+# Claims review — Semantics Parity Check: Five Metrics Compared Across Postgres, Snowflake and Databricks
 
 The author asked for this list: where the model that answered on his behalf, or the drafter,
 stretched, so he can confirm or cut before anything publishes. Tags: `[ledger]` claims ledger ·

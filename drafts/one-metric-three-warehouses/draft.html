@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Metric, Three Warehouses: Five MetricFlow Metrics Compared on Postgres, Snowflake and Databricks</title>
+<style>
+  :root {
+    --background: #fdfdfc;
+    --card: #f5f5f3;
+    --foreground: #1c1c1a;
+    --muted: #5c5c56;
+    --accent: #4a5a6a;
+    --border: #dedcd7;
+    --radius: 0.5rem;
+  }
+  * { box-sizing: border-box; }
+  body {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 4rem clamp(1.25rem, 4vw, 3rem) 5rem;
+    background: var(--background);
+    color: var(--foreground);
+    font: 17px/1.7 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  h1, h2, h3 {
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+  h1 { margin: 0 0 1rem; font-size: clamp(2rem, 5vw, 2.75rem); font-weight: 600; }
+  h2 { margin: 2.75rem 0 0.75rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 1.5rem; font-weight: 600; }
+  h3 { margin: 2rem 0 0.5rem; font-size: 1.15rem; font-weight: 600; color: var(--accent); }
+  p { margin: 0 0 1.15rem; }
+  .kicker {
+    margin: 0 0 0.75rem;
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  .dek { max-width: 60ch; margin: 0 0 2.25rem; color: var(--muted); font-size: 1.1rem; }
+  a { color: var(--accent); text-underline-offset: 0.18em; }
+  code {
+    padding: 0.08em 0.32em;
+    border-radius: 0.25rem;
+    background: var(--card);
+    font: 0.86em ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  pre {
+    padding: 1rem;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    font: 0.85rem/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  pre code { padding: 0; background: none; }
+  ul, ol { margin: 0 0 1.25rem; padding-left: 1.4rem; }
+  li { margin: 0 0 0.5rem; }
+  blockquote {
+    margin: 2rem 0;
+    padding-left: 1.25rem;
+    border-left: 3px solid var(--accent);
+    color: var(--accent);
+    font: 1.1rem/1.6 ui-serif, Georgia, serif;
+  }
+  figure { margin: 2.5rem 0; }
+  figure svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+  }
+  figcaption { margin-top: 0.7rem; color: var(--muted); font-size: 0.82rem; text-align: left; }
+  table { width: 100%; margin: 1.75rem 0; border-collapse: collapse; font-size: 0.92rem; }
+  th {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 2px solid var(--border);
+    color: var(--muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+  td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+  /* Editorial block: never published, never moved inside <article>. */
+  section.editorial {
+    margin-top: 3.5rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  section.editorial h2 { margin-top: 0; padding-top: 0; border-top: none; font-size: 1rem; }
+  section.editorial .tag {
+    font: 700 0.78rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--foreground);
+  }
+  @media print { body { max-width: none; padding: 0 0.5in; } section.editorial { display: none; } }
+</style>
+</head>
+<body>
+<article>
+  <p class="kicker">Anchoring AI</p>
+  <h1>One Metric, Three Warehouses: Five MetricFlow Metrics Compared on Postgres, Snowflake and Databricks</h1>
+  <p class="dek">Five metrics from the semantic layer ran on Postgres, Snowflake and Databricks and returned the same values within stated tolerances. This post covers how the check runs, what the saved SQL shows, what the Apache Ossie export loses, and what the check did not cover.</p>
+
+  <p>The first full live run of the agent evals in contact-center-ai scored 0.00 on SQL. The per-item export showed why: every metric item had answered with an error, a Postgres <code>syntax error at or near</code> a backtick in <code>FROM `ccai`.`marts`.`f_account_snapshot`</code>. The manifest that MetricFlow reads had last been written by a Databricks build, which quotes relations with backticks, and the metric tool ran that SQL against the local Postgres. The cause was the environment. The dialect difference was still real, and it raised a question I could now test: do the metric definitions return the same numbers on all three warehouses?</p>
+
+  <p>This post reports one parity check. <code>make parity</code> ran five of the 43 metrics in the semantic layer on Postgres, Snowflake and Databricks, against one synthetic dataset (a fictional credit union, seed 42; the repo is a portfolio mirror of work I did for a credit union), on two dates: 2026-10-06 and 2026-10-07. The Snowflake account is a trial account. The results files do not record which Databricks edition ran. All five metrics agreed within tolerances set per metric. Nothing here says the numbers would match for the other 38 metrics, a larger dataset, or your schema.</p>
+
+  <h2>How Parity Is Checked: One Metric Definition Compiled for Three SQL Dialects</h2>
+
+  <p>The semantic layer is dbt plus MetricFlow. Each metric is declared once in <code>olap/dbt/models/marts/semantic/metrics.yml</code>, and 21 of the 43 carry a filter on a line-of-business discriminator, <code>product.lob</code>. Think of that file as source code, MetricFlow as a compiler, and each warehouse as a target machine, like building one program for x86 and for ARM. The analogy stops being accurate at testing: a compiler is checked against a large test suite, and this check is five queries on one dataset, so it says these five agree and nothing about the compiler as a whole.</p>
+
+  <p><code>tools/parity.py</code> takes each target in turn. It copies that target's semantic manifest into place, runs <code>mf query</code> for the five metrics, and reads back one CSV row. It then runs the query a second time with <code>--explain</code> to save the SQL MetricFlow generated for that warehouse. When the last target is done, it restores the manifest that was there at the start. The restore matters because a leftover manifest from another warehouse is what broke the eval run above.</p>
+
+  <p>Snowflake and Databricks credentials come from 1Password through <code>tools/warehouse-run.sh</code>, so no <code>.env</code> file is populated. Snowflake authenticates with a key pair and has no password field.</p>
+
+  <h2>Five Metrics and Their Tolerances: Exact Counts, Cents for Money, 1e-4 for Rates</h2>
+
+  <p>The five are a count (<code>call_volume</code>), an average filtered to mortgages (<code>average_mortgage_note_rate</code>), two filtered sums (<code>banking_available_balance</code> and <code>credit_card_outstanding</code>) and one ratio (<code>first_contact_resolution_rate</code>). A comment in <code>parity.py</code> gives the tolerance rule: "Counts are exact; monetary amounts to the cent; rates/ratios to 1e-4." The files do not say why these five were chosen.</p>
+
+  <p>Think of a tolerance as the allowance on a machined part: a part within 0.01 of nominal passes. The analogy stops being accurate where the allowance comes from. A machinist's tolerance follows from what the part must do, and these follow from the type of number. A tighter or looser check is a one-line change in <code>METRICS</code> in <code>parity.py</code>.</p>
+
+  <h2>Results: All Five Metrics Agreed Within Tolerance on Both Run Dates</h2>
+
+  <p>Both runs finished with the note "All targets agree within tolerance." The table has the 2026-10-07 values from <code>results/semantics/2026-10-07_parity.json</code>.</p>
+
+  <table>
+    <thead>
+      <tr><th>Metric</th><th>Tolerance</th><th>Postgres</th><th>Snowflake</th><th>Databricks</th><th>Max diff</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>call_volume</code></td><td>0</td><td>1250</td><td>1250</td><td>1250</td><td>0</td></tr>
+      <tr><td><code>average_mortgage_note_rate</code></td><td>0.0001</td><td>6.588841176470588</td><td>6.588841176</td><td>6.5888412</td><td>about 2.4e-08</td></tr>
+      <tr><td><code>banking_available_balance</code></td><td>0.01</td><td>38287038.69</td><td>38287038.69</td><td>38287038.69</td><td>0.0</td></tr>
+      <tr><td><code>credit_card_outstanding</code></td><td>0.01</td><td>2354869.83</td><td>2354869.83</td><td>2354869.83</td><td>0.0</td></tr>
+      <tr><td><code>first_contact_resolution_rate</code></td><td>0.0001</td><td>0.5752</td><td>0.5752</td><td>0.5752</td><td>0.0</td></tr>
+    </tbody>
+  </table>
+  <p>Run 2026-10-07 at git <code>f46c7bd</code>, Python 3.13.5 on Linux. The hardware field describes the machine that ran the client. The files record no warehouse size or edition.</p>
+
+  <p>The 2026-10-06 run was at commit <code>99e12f5</code> and the 2026-10-07 run at <code>f46c7bd</code>. The values are the same on both dates, and the three saved SQL files are byte-identical between the dates.</p>
+
+  <p>One row is not identical on sight, and it is the mortgage rate. Postgres returned 6.588841176470588, Snowflake returned 6.588841176 and Databricks returned 6.5888412. The gap is about 2.4e-08, far inside the 0.0001 tolerance. The rendered README shows 6.589 for all three, which hides the difference. The files do not say why the number of decimals differs.</p>
+
+  <h2>SQL Differences Between Dialects: Relation Quoting and One Cast Type</h2>
+
+  <p>Diffing the three saved files for 2026-10-07 shows the same structure in each: three CTEs, five subqueries joined with <code>CROSS JOIN</code>, a <code>LEFT OUTER JOIN</code> from the account snapshot to <code>d_product</code> on <code>product</code>, and a <code>WHERE product__lob = 'mortgage'</code> filter (or <code>'banking'</code>, or <code>'cards'</code>) on the three line-of-business metrics. Two things differ.</p>
+
+  <p>The first is how relations are quoted. The saved files replace the real database names with <code>&lt;name&gt;</code>, so the fragments below show the pattern.</p>
+
+<pre><code>Postgres:    FROM "contactcenter"."marts"."f_interaction" interactions_src_10000
+Snowflake:   FROM &lt;name&gt;.&lt;name&gt;.f_interaction interactions_src_10000
+Databricks:  FROM `&lt;name&gt;`.`marts`.`f_interaction` interactions_src_10000</code></pre>
+
+  <p>The second is the cast type in the ratio. Postgres writes <code>AS DOUBLE PRECISION</code>. Snowflake and Databricks write <code>AS DOUBLE</code>. In all three files the ratio is <code>CAST(SUM(__first_contact_resolved_calls) ...) / CAST(NULLIF(SUM(__call_volume), 0) ...)</code>, so float division and a zero denominator that returns null are in the generated SQL on every target.</p>
+
+  <p>That is the whole list for these five metrics. The five metrics' SQL contains no date functions, so this run says nothing about how the dialects handle dates. The dbt models follow portability rules (no <code>::</code> casts, no <code>to_char</code>, use <code>dbt.dateadd</code> and <code>dbt.datediff</code>), but the parity run does not exercise time dimensions.</p>
+
+  <h2>Ossie Export: What the Interchange File Kept and Dropped</h2>
+
+  <p>Apache Ossie (incubating, formerly Open Semantic Interchange) defines a vendor-neutral YAML format for semantic models. Its spec was at <code>0.2.0.dev0</code>, marked draft, when the repo's notes checked it on 2026-10-02. The repo's export was converted from the dbt semantic manifest with the Apache converter, <code>ossie-dbt msi-to-ossie</code>, at commit <code>b6c702e</code>. The export has 11 datasets and 43 metrics and passes the upstream validator.</p>
+
+  <p>Think of the export as a translation of a manual in which every sentence survived and a footnote that says which units to use was dropped. The text reads fine and the result can be wrong. The analogy stops being accurate in two ways: the translator here is a converter with fixed behavior, and the parity check did not run the exported expressions, so the wrong result is predicted from reading them.</p>
+
+  <p>Three issues turned up. First, the line-of-business filter points at <code>product__lob</code>, which is a MetricFlow join path. <code>account_snapshot</code> has no field by that name. Twenty-one filtered metrics are affected, plus two built from them. Second, <code>call_volume</code>, <code>responses</code> and <code>rate_locks_count</code> all export as <code>SUM(1)</code> with no dataset qualifier, so a consumer cannot tell which dataset each one counts. Third, ratios lose MetricFlow's float division: the export writes <code>(num) / (den)</code>, and on an engine with integer division such as Postgres, <code>first_contact_resolution_rate</code> would truncate to 0. A zero denominator would raise an error where MetricFlow returns null. That third issue is the same cast the parity files show above.</p>
+
+  <p>Some constructs have no Ossie equivalent and are dropped: <code>time_granularity</code>, the default aggregation time dimension and metric labels. A metric's type is inlined into one expression, so <code>net_member_liquidity</code> no longer references its two input metrics. The dataset <code>source</code> carries the Postgres relation name only. As of 2026-10-06 none of the three issues had been reported upstream.</p>
+
+  <h2>Limits of the Parity Check: Untested Metrics, Scale, Dates and Accounts</h2>
+
+  <p>The other 38 metrics did not run, including the derived metrics <code>net_member_liquidity</code>, <code>member_lifetime_value</code> and <code>nps</code>, and the ratio <code>weighted_mortgage_portfolio_rate</code>. Only one of the repo's interest-rate metrics, <code>average_mortgage_note_rate</code>, was in the check. The dataset is one synthetic credit union with a single month-end snapshot (2026-08-31) per account, so there is no slowly changing history, no daily refresh and no date function in the SQL. Nothing measured scale, timing or cost. Snowflake was a trial account, the Databricks edition is unrecorded, and the two runs are on consecutive dates.</p>
+
+  <p>The comparison itself looks at values only. <code>parity.py</code> diffs the numbers against tolerances and saves the SQL, and nothing asserts on the SQL text. A dialect difference that returned the same numbers on this data would pass. The parity check never executed the Ossie export, so its three issues come from reading its expressions.</p>
+
+  <h2>Verdict and Reproduction: Run the Parity Check on Your Own Metrics</h2>
+
+  <p>For these five metrics on this dataset, MetricFlow compiled one definition into three dialects that returned the same values within tolerance, and the SQL differed only in relation quoting and one cast type. I would keep MetricFlow as the source of truth and use the Ossie export only to move definitions between tools, because the export's expressions give different numbers if a consumer executes them directly. That changes when the three issues are fixed upstream and the export passes the same parity check.</p>
+
+  <p>To repeat the check, run <code>make parity</code> in the repo, read <code>results/semantics/</code> for the values and the saved SQL, and compare them before you quote any number from this post.</p>
+</article>
+
+<section class="editorial" aria-label="Editorial annotations, not for publication">
+  <h2>Editorial annotations</h2>
+
+  <p><span class="tag">[NOTE: interview basis]</span> The transcript behind this draft was answered by a model on the author's behalf and is not yet verified by him (banner in transcript.md). The to-confirm list is in claims-review.md. This piece carries few personal-experience claims: the answerer stayed on the evidence, so the draft's only personal-story content is the eval-run incident from committed files and the first-person "I" for choices and limits the files support.</p>
+  <p><span class="tag">[GAP: interest-rate metric count, five versus four]</span> Not settled, and the body gives no count. docs/TOUR.md (line 91) says "interest rate" is five declared metrics and shows a five-metric `mf query --explain`. docs/semantics/README.md (line 111) says the LOB filter keeps "the four 'interest rate' meanings apart". The header comment in olap/dbt/models/marts/semantic/metrics.yml says four side-by-side answers, while its per-metric comments number meanings 1, 2, 4a, 4b, 5 and 6 and the file declares seven interest-rate metrics (plus the intermediate note_rate_times_balance). olap/dbt/README.md lists the same seven in its lookup table and five values in its worked example; docs/TOUR.md (line 527) says seven. Author decides which framing to publish and which documents to correct.</p>
+  <p><span class="tag">[GAP: Databricks edition]</span> The results files record neither the Databricks edition (Azure Premium workspace or Free Edition; infra/azure/modules/databricks/README.md supports both) nor any warehouse size. The body says "unrecorded". The Snowflake trial account is from docs/TOUR.md ("a Snowflake trial account hosted on AWS"), not from results/semantics/.</p>
+  <p><span class="tag">[GAP: why the mortgage rate differs in decimals]</span> 6.588841176470588 / 6.588841176 / 6.5888412. Cause not in the files, so the body says only that the files do not say. If the author investigated, add the cause. Do not guess in print.</p>
+  <p><span class="tag">[GAP: Ossie issues not reported upstream]</span> Brief B2 says a stronger post files the three export issues first. As of 2026-10-06 they were not filed. If filed before publishing, add the issue links and update "As of" in the Ossie section.</p>
+  <p><span class="tag">[GAP: confirm the command form]</span> The body shows <code>make parity</code> only. The results files show the runs happened and the Makefile defines the target, but the draft cannot show the exact invocation used on each date.</p>
+  <p><span class="tag">[NOTE: stale lines in the repo]</span> olap/dbt/README.md still says "Not run against a real warehouse or 1Password yet; the first run is the test" and "Neither loader has been run against a real warehouse". Both predate the parity runs. The post does not repeat them. Per the ledger, published posts are corrected at the top, but these are repo docs, so the author may simply fix them.</p>
+  <p><span class="tag">[NOTE: repo URL]</span> Confirm the public repo URL before adding a link. The draft names the repo without a URL.</p>
+  <p><span class="tag">[NOTE: parity only for five metrics]</span> Headline limited per brief B2 and the ledger: "same numbers on all three" appears only with the five names, one dataset, tolerances, dates and account types attached.</p>
+
+  <h2>Claim tags</h2>
+  <p>[repo] First live eval run: sql 0.00; backtick syntax error on Postgres; stale manifest written by a Databricks build; cause was the environment. evals/README.md lines 146-148 (re-read 2026-10-07).</p>
+  <p>[repo] Five of 43 metrics; per-metric tolerances; METRICS comment; two run dates; "All targets agree within tolerance"; table values and git shas. results/semantics/README.md, 2026-10-07_parity.json, tools/parity.py.</p>
+  <p>[repo] Identical values and byte-identical SQL across the two dates. Checked by diff by the orchestrator on 2026-10-07 (sources.md).</p>
+  <p>[repo] How parity.py works: stage manifest, mf query, CSV row, --explain, restore. tools/parity.py (run_parity, run_mf_target, stage_semantic_manifest, restore_manifest).</p>
+  <p>[repo] 1Password via tools/warehouse-run.sh; Snowflake key pair, no password field. olap/dbt/README.md.</p>
+  <p>[repo] Three-dialect SQL structure and the two differences; sanitize_sql replacing names with &lt;name&gt;. results/semantics/*.sql; tools/parity.py.</p>
+  <p>[repo] Portability rules for the dbt models. olap/dbt/README.md.</p>
+  <p>[repo] Ossie spec 0.2.0.dev0 draft, converter commit b6c702e, 11 datasets and 43 metrics, validator pass, three known issues, dropped constructs, not reported upstream as of 2026-10-06. docs/semantics/README.md (checked 2026-10-02 against the Apache repository by the repo's author; not re-fetched here).</p>
+  <p>[repo] Snowflake trial account. docs/TOUR.md line 460.</p>
+  <p>[ledger] Synthetic dataset, Meridian Valley, seed 42, "a portfolio mirror of work I did for a credit union". Ledger and style guide. The draft does not name the credit union.</p>
+  <p>[stretch] Intro: the eval failure "raised a question I could now test". The link between the eval incident and the decision to run parity is the drafter's framing; the repo's plan (docs/AGENT_HANDOFF.md S3) gives the reason for S3 as showing the dialect differences. Confirm or cut.</p>
+  <p>[stretch] "The restore matters because a leftover manifest from another warehouse is what broke the eval run." The mechanism is in evals/README.md; the purpose of the restore step is inferred, parity.py's docstring only says the manifest is switched and restored.</p>
+  <p>[stretch] Verdict: "I would keep MetricFlow as the source of truth and use the Ossie export only to move definitions between tools." A first-person recommendation drawn from docs/semantics/README.md and transcript Q5/Q10; not a recorded decision of the author's.</p>
+  <p>[device] Compiler and target machines (x86 and ARM), for the semantic layer. Editorial teaching device, not a claim; limit stated in the body (testing).</p>
+  <p>[device] Allowance on a machined part, for the per-metric tolerance. Editorial teaching device, not a claim; limit stated (where the allowance comes from).</p>
+  <p>[device] Translation of a manual with a dropped footnote, for the Ossie export. Editorial teaching device, not a claim; limits stated (fixed-behavior converter, export not executed).</p>
+</section>
+</body>
+</html>

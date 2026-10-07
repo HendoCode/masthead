@@ -1,0 +1,23 @@
+{
+  "slug": "one-metric-three-warehouses",
+  "title": "One Metric, Three Warehouses: Five MetricFlow Metrics Compared on Postgres, Snowflake and Databricks",
+  "voice": "stephen",
+  "origin": "blogs/PROPOSED_POSTS.md brief B2 (contact-center-ai checkout)",
+  "target": "blog post (Anchoring AI series, contact-center-ai GitHub Pages; 1,200-2,500 words)",
+  "target_formats": [
+    "blog"
+  ],
+  "partners": [],
+  "stage": "ready-for-human-pass",
+  "council_score": 9.0,
+  "open_gaps": 5,
+  "interview": {
+    "interviewers": [
+      "domain-specialist",
+      "skeptic"
+    ],
+    "answered_turns": 10,
+    "answered_by": "claude-sonnet-5-5 on the author's behalf, unverified"
+  },
+  "to_confirm_stretch_claims": 5
+}

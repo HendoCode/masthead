@@ -143,6 +143,16 @@ section):
     (claims-steward); the example metric names now spelled out in the terms row above
     (claims-steward).
   - No information gaps remained open for the panel.
+- Round 3 (v2 redraft, 2026-10-07, one inline combined pass, no external model; headline-utility
+  added): slop-allergist 9, voice-guardian 9, presentation-reviewer 9, claims-steward 9,
+  technical-reviewer 9, specificity-auditor 9, headline-utility 10. Aggregate 9.14. No hard caps
+  invoked; the 8 unconfirmed `[stretch]` items remain the expected steward limit. Changes: all
+  titles and headings rewritten as literal and functional; live-run table replaced by an account
+  of the two runs (figures re-read from results/evals/README.md at b847341: 2026-10-04 sql 0.000,
+  judge 0.159 ambiguous / 0.343 all; 2026-10-05 sql 1.000, judge 0.932 / 0.824; route and
+  interrupt 1.000 both); draw_mermaid() told as what the run showed; four `[device]` analogies.
+  Length is about 2,970 prose words, above the 1,200-2,500 band; the captain ruled the band a
+  soft guide (2026-10-07), so stories and analogies were kept.
 - Result: stage=ready-for-human-pass. Open items before publishing live in the draft's
   editorial block, in claims-review.md (8-item to-confirm list), and in the checklist
   below. The transcript was model-answered on the author's behalf and is unverified;

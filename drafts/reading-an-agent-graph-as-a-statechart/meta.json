@@ -1,6 +1,6 @@
 {
   "slug": "reading-an-agent-graph-as-a-statechart",
-  "title": "Reading an agent graph as a statechart",
+  "title": "Reading a LangGraph Agent Graph as a Statechart: Interrupt Flow and Test Coverage",
   "voice": "stephen",
   "origin": "blogs/PROPOSED_POSTS.md brief B3 (contact-center-ai checkout)",
   "target": "blog post (Anchoring AI series, contact-center-ai GitHub Pages)",
@@ -9,6 +9,6 @@
   ],
   "partners": [],
   "stage": "ready-for-human-pass",
-  "council_score": 9.33,
+  "council_score": 9.14,
   "open_gaps": 3
 }

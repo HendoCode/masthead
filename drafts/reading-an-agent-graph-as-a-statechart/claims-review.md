@@ -33,6 +33,20 @@ elsewhere), so the ledger extract (last synced 2026-10-06) was the only claims a
   exists (`test_after_two_re_asks_every_candidate_runs`), and all 38 agent tests passed when
   run on 2026-10-06. The draft shows the committed test verbatim.
 
+## Teaching devices (`[device]`, 4 items, v2 redraft 2026-10-07)
+
+Editorial analogies, not claims; none carries a number or evidence. Each is followed in the
+body by where it stops being accurate.
+
+| # | Analogy | Concept it teaches | Where it stops (stated in the body) |
+|---|---|---|---|
+| 1 | Clinic with one waiting room | AwaitingChoice is the only resting state | Storage: the Postgres checkpoint holds the state |
+| 2 | Saved game and save slot | Checkpoint and `thread_id` | Timing (every super-step) and who mints the id |
+| 3 | Clerk rereading the form | Restart-on-resume, idempotent entry | Memory: the node keeps only checkpointed state |
+| 4 | Delivery route, two-lane toll booth | Counting coverage by edge | What picks the lane: `clarify_attempts` |
+
+The v2 redraft added no new first-person anecdote. The `[stretch]` list above is unchanged (8).
+
 ## Corrected errors (where the answering model over-claimed; the author asked to see these)
 
 These were not stretches but wrong statements about the repo, made because the panel's

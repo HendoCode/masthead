@@ -46,5 +46,11 @@ author's own confirmed edits.
   **Rule:** start with a plain statement of what he did; state the facts and stop.
 - 2026-10-06 · Stephen: he has never written a title starting with "What" and never will.
   **Rule:** no title or heading starts with "What."
+- 2026-10-07 · Stephen: cryptic and poetic headings ("Where the wait lives," "The bench under
+  test") fail; headings must be literal and functional (table in `style-guide.md`). **Rule:**
+  every title and heading names its subject and what the section does; no metaphor in a heading.
+- 2026-10-07 · Stephen tells the story of a run instead of reciting log and table output, and
+  teaches with analogies. **Rule:** narrate what happened, keep the figures; one plain analogy per
+  major concept in the body, with where it stops being accurate.
 
 <!-- Proposed lessons awaiting Stephen's yes live in PROPOSED-LESSONS-stephen.md at the brain's root, outside the loaded pack. -->

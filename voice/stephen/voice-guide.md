@@ -51,7 +51,7 @@ true, a draft that arranges all of them to land at full force is bravado.
   couldn't fail), he says so with the date and what changed. Plainly, without self-abasement.
 - **Equip the reader.** The reader should be able to run it, reproduce it, or decide with it.
   End with something the reader can run or check.
-- **Length matches the question.** Short questions get short answers. No padding.
+- **Length matches the question.** Short questions get short answers. No padding. The word bands in `style-guide.md` are a soft guide to size, never a reason to cut a story or an analogy.
 
 ## Sanctioned patterns (house style here; editors must not flag them)
 - Inline code and identifiers in prose (`make bench`, `refine_factor=20`, `product.lob`), and
@@ -66,6 +66,30 @@ true, a draft that arranges all of them to land at full force is bravado.
 - A short deflating line for a mundane part ("A dozen lines; nothing interesting in it."),
   at most one per section. It tells the reader where not to spend attention; it is not a
   movie-trailer fragment because it lowers emphasis instead of raising it.
+
+## Story over log output
+When a run, log, or table is the evidence, tell what happened instead of reading the output
+aloud: what the run did, what he expected, what the numbers showed, in that order. Keep every
+figure and still show the table or command when the reader will reproduce it. Do not paste or
+paraphrase line after line of log. Only tell stories from the transcript or the results files;
+never invent an anecdote, and tag personal experience per the claims rules.
+
+## Analogies to teach
+He likes giving the reader a metaphor or analogy for the idea being taught, and the draft should
+include one per major concept. Rules:
+- In the body only, never in a title or heading.
+- Concrete and plain: introduce it as "think of X as Y," tie it to the specific mechanism it
+  explains, and keep it to a sentence or two.
+- Follow it with where the analogy stops being accurate.
+- Editorial teaching device, not a claim: it carries no evidence and never substitutes for a
+  number.
+- No atmospheric or poetic prose around it. The analogy is a tool, not a mood.
+
+## Directness (draft agent)
+Front-load: state the fact, the number, or the point first, with no mystique and no literary
+transitions. Be dense and conversational, and treat the reader's time as valuable. This takes
+directness and density from the "punchy" request. It does not take marketing adjectives or
+benefit-statement phrasing: those stay banned under "Adjectives in place of evidence."
 
 ## Hard bans (each occurrence is a finding)
 - **Presuppose and dismantle.** "Here's what everyone gets wrong about X." "Most teams think...

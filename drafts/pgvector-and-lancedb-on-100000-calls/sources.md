@@ -102,3 +102,13 @@ hygiene notes into the editorial block.
 Come back and run Step 7 (Lessons): the machine diffs the published version against the
 draft, proposes generalizable lessons, and on an explicit yes appends them to
 voice/stephen/content-lessons.md.
+
+## Council record, v2 redraft (2026-10-07)
+One inline combined round, no external model; headline-utility added. slop-allergist 9,
+voice-guardian 9, presentation-reviewer 9, claims-steward 6, technical-reviewer 9,
+specificity-auditor 9, headline-utility 10. Aggregate 8.71. The steward cap is the expected one
+(author-unconfirmed `[stretch]` verdict and next-tests); no blocked name, status upgrade, or
+unsourced number. Changes: all titles and headings rewritten as literal and functional; the
+by-type recall table and the headline results are told as what the run showed, with figures
+re-read from results/retrieval/README.md at b847341 (x80-ivf-pq run, 2026-10-03); four `[device]`
+analogies added. The soft word band was not used to cut stories or analogies.

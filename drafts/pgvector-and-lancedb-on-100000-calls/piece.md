@@ -7,7 +7,7 @@ The active piece is named in the orchestrator's state banner.
 ## Metadata
 - Slug:        pgvector-and-lancedb-on-100000-calls
 - Voice:       stephen
-- Title:       pgvector and LanceDB on 100,000 calls
+- Title:       Benchmarking pgvector and LanceDB on 100,000 Call Transcripts: Latency, Recall and Index Build Cost
 - Origin:      Post brief B4, blogs/PROPOSED_POSTS.md (contact-center-ai) — run on local/stephen-voice-kit
 - Target:      (unset — blog post / social / newsletter / reference doc)
 - Partners:    none configured (see partners/README.md; the council runs quality-editors-only)
@@ -22,6 +22,6 @@ The active piece is named in the orchestrator's state banner.
 
 ## Status
 - Stage:          council   (interviewing → drafting → council → ready-for-human-pass → published)
-- Council score:  6.5 / 10 aggregate at round 9 (below the 9/10 publishing bar; standing caps are author-gated [stretch] items, see claims-review.md and sources.md council record)
+- Council score:  8.71 after v2 redraft (round 10, inline: slop 9, voice 9, presentation 9, claims-steward 6 (cap: unconfirmed [stretch] verdict and next-tests), technical 9, specificity 9, headline-utility 10); earlier 6.5 / 10 aggregate at round 9 (below the 9/10 publishing bar; standing caps are author-gated [stretch] items, see claims-review.md and sources.md council record)
 - Open GAPs:      5 (49x mechanics; agent-level eval placement; ivf_flat committed run; scale-1 table; exact-scan parallelism) plus the [stretch]/to-confirm list in claims-review.md
 - Published URL:  none yet

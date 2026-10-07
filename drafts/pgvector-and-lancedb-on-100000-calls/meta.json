@@ -1,14 +1,14 @@
 {
   "slug": "pgvector-and-lancedb-on-100000-calls",
-  "title": "pgvector and LanceDB on 100,000 calls",
+  "title": "Benchmarking pgvector and LanceDB on 100,000 Call Transcripts: Latency, Recall and Index Build Cost",
   "voice": "stephen",
   "origin": "Post brief B4, blogs/PROPOSED_POSTS.md (contact-center-ai) — run on local/stephen-voice-kit",
   "target": "blog post (Anchoring AI series, measurement write-up)",
   "target_formats": ["draft.html"],
   "partners": [],
   "stage": "council",
-  "council_score": 6.5,
-  "council_rounds": 9,
+  "council_score": 8.71,
+  "council_rounds": 10,
   "open_gaps": 5,
   "notes": "Transcript was answered by a model on Stephen Henderson's behalf, not yet verified by the author (banner in transcript.md). [stretch] claims and the author to-confirm list live in claims-review.md. Council aggregate below the 9/10 bar by design; see sources.md council record."
 }

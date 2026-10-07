@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>pgvector and LanceDB on 100,000 calls</title>
+<title>Benchmarking pgvector and LanceDB on 100,000 Call Transcripts: Latency, Recall and Index Build Cost</title>
 <!--
   Draft shell, from templates/draft-skeleton.html
   1. Self-contained. No external fetches, no build step, no linked assets.
@@ -123,12 +123,12 @@
 <body>
 <article>
   <p class="kicker">Anchoring AI &#183; Measurement</p>
-  <h1>pgvector and LanceDB on 100,000 calls</h1>
+  <h1>Benchmarking pgvector and LanceDB on 100,000 Call Transcripts: Latency, Recall and Index Build Cost</h1>
   <p class="dek">One laptop, 100,000 synthetic transcripts, 40 labeled questions, one retriever interface. p50 latencies: pgvector exact scan 872.9 ms, pgvector HNSW 3.799 ms, LanceDB default IVF-PQ 15.994 ms.</p>
 
   <p>The contact-center-ai repo indexes 100,000 synthetic call transcripts, and its search path needed a store choice. I ran the same 40 labeled questions through one retriever interface against pgvector and LanceDB on an 8-core i5 laptop with 15 GB RAM. The run is dated 2026-10-03; its rendered table lives in <code>results/retrieval/README.md</code>, which records the hardware and the software versions. The full environment is under the results table below.</p>
 
-  <h2>The bench under test</h2>
+  <h2>Testing Environment and Dataset Parameters</h2>
 
   <p>The labels live in <code>retrieval/labels/queries.jsonl</code>. All 40 records carry the query text, an optional <code>where</code> clause, the relevant call ids, a type, and a derivation predicate. The relevant ids come from the seed-42 generator's own output, before any retriever runs. The four types:</p>
 
@@ -165,13 +165,19 @@
 
   <p>Two pgvector details are recorded in <code>retrieval/README.md</code>. The HNSW index is partial because the LangChain column has no fixed dimension; it is queried with bench-only SQL and dropped afterwards. The Compose <code>db</code> service sets <code>shm_size</code> to 1gb because Docker's default shared memory is too small for a parallel HNSW build at 100,000 rows.</p>
 
-  <h2>Two recall numbers</h2>
+  <h2>Evaluating Capped Label Recall vs. ANN Recall Metrics</h2>
 
   <p>Label recall@10 is capped recall, |relevant &#8745; top-k| / min(k, |relevant|), against the generator-derived relevant ids. <code>ann_recall@10</code> is the overlap of a vector row's top 10 against a brute-force exact top 10 the bench computes itself on the same vectors, the same filter, and the same tie handling; an exact scan scores 1.0 there by construction. The two metrics have different reference sets, and the columns are never subtracted from each other.</p>
 
+  <p>Think of label recall as grading against the teacher's answer key, and <code>ann_recall@10</code> as grading a speed-reader against the same book read slowly and in full. The first says whether the key was matched. The second says what the shortcut lost. The analogy stops being accurate on the slow read: it can still miss the key, and the exact scan's label recall is 0.800.</p>
+
   <p>At scale 80 the labels still carry the ids computed at scale 1, and every replica of a relevant call counts as relevant. At scale 1 each relevant call has one copy, so the label recall columns read against one copy per call. At scale 80 the replicas make recall measure ranking among near-duplicates, so scale runs compare ingest and latency only. On filter queries, pgvector-hnsw label recall@10 is 0.800 while the exact scan's is 0.700. I did not test why HNSW scores above the exact scan there; tie handling among the 80 near-duplicates is my hypothesis.</p>
 
-  <h2>Results at 100,000 rows</h2>
+  <h2>Latency, Recall and Build-Time Results at 100,000 Rows</h2>
+
+  <p>The exact scan is the reference row. Across the 40 questions it took 872.9 ms at p50 and scored 1.000 on <code>ann_recall@10</code> by construction. An approximate index is expected to give up some recall for speed, and HNSW did: 3.799 ms at p50, <code>ann_recall@10</code> 0.495, label recall 0.700, with an index built in 27.180 s. LanceDB's default IVF-PQ answered in 15.994 ms at p50 and scored 0.025 on <code>ann_recall@10</code>, with label recall 0.440 and an index build of 115.4 s. LanceDB's lexical row (fts) took 11.260 ms and its hybrid row 19.495 ms. The full table follows for anyone checking a figure.</p>
+
+  <p>Think of the exact scan as checking every book in a library, and HNSW as following a chain of "see also" notes from a starting shelf. The notes reach the right shelf quickly and sometimes skip a book. The analogy stops being accurate on the notes: HNSW's walk keeps a candidate list sized by <code>ef_search</code>, which this run left at 40, so how much it skips depends on that setting.</p>
 
   <table>
     <caption>2026-10-03 x80-ivf-pq run, <code>k=10</code>, <code>repeats=3</code>.</caption>
@@ -202,37 +208,27 @@
 
   <p>The pgvector HNSW p95 of 92.885 ms against a p50 of 3.799 ms is driven by the filter queries: the per-type p95 is 134.7 ms on filter queries against about 5 ms for the other types. The pgvector README documents the mechanism: with approximate indexes, filtering applies after the index is scanned, and <code>iterative_scan=relaxed_order</code> keeps walking the graph until k matches pass. The mechanism is consistent with the numbers; the bench did not isolate it. The per-type p50 rows read 71.103 ms on filter queries against 3.349 to 3.477 ms for the other types. LanceDB's vector row sits at 25.356 ms p50 on the same filters.</p>
 
-  <table>
-    <caption>recall@10 by question type, same run.</caption>
-    <thead>
-      <tr><th>Row</th><th>Topical</th><th>Filter</th><th>Exact</th><th>Paraphrase</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>pgvector/vector</code></td><td>1.000</td><td>0.700</td><td>0.600</td><td>0.889</td></tr>
-      <tr><td><code>pgvector-hnsw/vector</code></td><td>0.818</td><td>0.800</td><td>0.500</td><td>0.667</td></tr>
-      <tr><td><code>lancedb/vector</code></td><td>0.509</td><td>0.600</td><td>0.300</td><td>0.333</td></tr>
-      <tr><td><code>lancedb/fts</code></td><td>0.818</td><td>0.800</td><td>1.000</td><td>0.000</td></tr>
-      <tr><td><code>lancedb/hybrid</code></td><td>0.664</td><td>0.750</td><td>0.650</td><td>0.333</td></tr>
-    </tbody>
-  </table>
+  <p>Think of asking for the 10 nearest coffee shops and then keeping only the open ones: if most nearby shops are closed, you keep walking outward until 10 open ones turn up. That is the filtered-query tail. The analogy stops being accurate on where the walking happens: it is inside the index graph, and the bench did not isolate it.</p>
 
-  <p>BM25 scores mean recall@10 1.000 on exact and 0.000 on paraphrase. The paraphrase queries share no content words with their targets, so exact-term overlap can only match them by chance.</p>
+  <p>Split by question type, the same run shows where each row wins. The exact scan scored 1.000 on topical questions, 0.700 on filter, 0.600 on exact and 0.889 on paraphrase. HNSW scored 0.818, 0.800, 0.500 and 0.667. LanceDB's vector row scored 0.509, 0.600, 0.300 and 0.333, and its hybrid row 0.664, 0.750, 0.650 and 0.333. The lexical row scored 0.818 on topical, 0.800 on filter, 1.000 on exact and 0.000 on paraphrase.</p>
 
-  <h2>Index settings and their costs</h2>
+  <p>The lexical row's 1.000 on exact and 0.000 on paraphrase is what BM25 should produce. The paraphrase queries share no content words with their targets, so exact-term overlap can only match them by chance.</p>
+
+  <h2>Effect of LanceDB IVF-PQ Settings on Recall and Latency</h2>
 
   <p>The LanceDB default row measured label recall@10 0.440 and <code>ann_recall@10</code> 0.025 at 15.994 ms p50. The default is sized for larger data, and I measured it at 100,000 rows. I have not tested whether that explains 0.025. One factor is known: the 80 replicas of each call sit within a seeded jitter of 0.05, so the exact top 10 itself is close to a tie.</p>
 
   <p>Between the default row and the <code>refine_factor=20</code> row, the recorded settings differ in <code>refine_factor</code> alone. The index stays <code>ivf_pq</code>, cosine, 316 partitions, default nprobes; the two rows share one ingest (146.4 s). <code>refine_factor=20</code> measured p50 20.282 ms, label recall@10 0.528, and <code>ann_recall@10</code> 0.163. The arithmetic is 4.3 ms at the median for a recall lift from 0.440 to 0.528. <code>refine_factor=1</code> landed 1.5 ms from the default row's p50 (17.470 ms against 15.994 ms), and one run per config is too few to establish that difference.</p>
 
-  <p>The <code>nprobes</code> knob did not move recall. The committed bench notes record exact-top-10 overlap flat at 2/10 across the probe range, from 1 probe to all 316. A separate local run on offline hashed embeddings held at 0.225 at 5, 20, and 50 probes; those embeddings differ from the nomic-embed-text run, so that observation is weak corroboration. The README states the loss is "PQ quantization, which cannot rank near-identical vectors." The two committed observations do not contradict it. As of 2026-10-06, I have not raised <code>num_sub_vectors</code> or changed the partition count in a committed run, and no non-PQ control (<code>ivf_flat</code> or <code>ivf_hnsw_sq</code>) is committed.</p>
+  <p>The <code>nprobes</code> knob did not move recall. The committed bench notes record exact-top-10 overlap flat at 2/10 across the probe range, from 1 probe to all 316. A separate local run on offline hashed embeddings held at 0.225 at 5, 20, and 50 probes; those embeddings differ from the nomic-embed-text run, so that observation is weak corroboration. The README states the loss is "PQ quantization, which cannot rank near-identical vectors." The two committed observations do not contradict it. Think of product quantization as describing every face with a few coarse features, such as hair and glasses. That separates strangers and fails on 80 twins. The analogy stops being accurate on the mechanism, which compresses slices of each vector into codebook entries rather than describing features chosen by meaning, and the PQ diagnosis itself is untested here. As of 2026-10-06, I have not raised <code>num_sub_vectors</code> or changed the partition count in a committed run, and no non-PQ control (<code>ivf_flat</code> or <code>ivf_hnsw_sq</code>) is committed.</p>
 
-  <h2>A discarded early run</h2>
+  <h2>Excluding the Initial Non-Comparable Benchmark Run</h2>
 
   <p>The first result was a 49x gap. It was a non-comparable run, and I threw it out. The rows, the latencies, and the settings behind it are not in the files this post cites.</p>
 
   <p>The bench behind the table records its comparability machinery in <code>retrieval/README.md</code>. Every row records its index and search settings. There is one exact reference row. Embeddings are precomputed and cached, with ingest and latency timings excluding the embedding step. Timing starts after one untimed pass over every query, so a cold cache cannot count against either side.</p>
 
-  <h2>Choosing at this size</h2>
+  <h2>Choosing Between pgvector HNSW and LanceDB at 100,000 Rows</h2>
 
   <p>The ingest figures are one measurement per store: 177.6 s into Postgres through langchain-postgres 0.0.17, 146.4 s into LanceDB. The index builds are separate measurements after ingest: 27.180 s for HNSW, 115.4 s for IVF-PQ.</p>
 
@@ -240,7 +236,7 @@
 
   <p>I have not run any of this against a production query mix.</p>
 
-  <h2>Next tests</h2>
+  <h2>Follow-Up Tests Not Yet Run</h2>
 
   <ol>
     <li>A scale-1 rerun, where each relevant call has one copy and label recall measures category discrimination.</li>
@@ -258,6 +254,7 @@
 <section class="editorial" aria-label="Editorial annotations, not for publication">
   <h2>Editorial annotations</h2>
 
+  <p><span class="tag">[NOTE: v2 redraft 2026-10-07]</span> Headings rewritten as literal and functional (voice kit v2). The headline results and the by-type recall figures are told as what the run showed; every figure was re-read from results/retrieval/README.md (b847341, x80-ivf-pq run). Four analogies added, each tagged [device] in the register and followed by where it stops being accurate. No new first-person anecdote was added.</p>
   <p><span class="tag">[BANNER]</span> The interview transcript for this piece was answered by a model on Stephen Henderson's behalf and has not been verified by the author. Substantive claims carry [ledger], [repo], [web], or [stretch] tags. [stretch] claims are plausible but unbacked (see claims-review.md in this folder); the author reviews them before anything publishes.</p>
 
   <h3>Claims register</h3>
@@ -281,6 +278,10 @@
       <tr><td>Default IVF-PQ framing: sized for larger datasets, measured at a small one; no committed test isolating the cause</td><td>[ledger]</td><td>claims-ledger.md fixed wording; brief B4 Must-not-claim; turn-12</td></tr>
       <tr><td>Named verdict: pgvector with HNSW for the vector-search path at 100,000 rows; flips on the filtered-vector tail (71.103 ms vs 25.356 ms p50, 30.330 ms p95) and on hybrid/BM25-needing paths</td><td>[stretch]</td><td>turn-15 (council-routed; pick is the model's, author unconfirmed); the cited numbers are [repo]</td></tr>
       <tr><td>Next-tests proposals, including the memory/disk footprint item</td><td>[stretch]</td><td>turn-11, turn-12 (proposed tests, not run)</td></tr>
+      <tr><td>Analogy: teacher's answer key vs speed-reader, for label recall vs ann_recall; stops at the slow read scoring 0.800</td><td>[device]</td><td>Editorial teaching device, not a claim</td></tr>
+      <tr><td>Analogy: library with "see also" notes, for exact scan vs HNSW; stops at the ef_search candidate list</td><td>[device]</td><td>Editorial teaching device, not a claim</td></tr>
+      <tr><td>Analogy: nearest open coffee shops, for post-filtering and the filtered tail; stops at where the walking happens</td><td>[device]</td><td>Editorial teaching device, not a claim</td></tr>
+      <tr><td>Analogy: coarse facial features and twins, for PQ on near-duplicate replicas; stops at the mechanism, and the PQ diagnosis is untested here</td><td>[device]</td><td>Editorial teaching device, not a claim</td></tr>
       <tr><td>Corpus identity (Meridian Valley, seed 42, portfolio mirror, no client data)</td><td>[ledger]</td><td>claims-ledger.md</td></tr>
     </tbody>
   </table>

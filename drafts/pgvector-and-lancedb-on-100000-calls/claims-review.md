@@ -109,3 +109,17 @@ then (expected per the task brief: the cap on `[stretch]` claims is the mechanis
   author-unconfirmed `[stretch]` claims. The council record lives in
   `drafts/../sources.md` and the raw editor outputs are in the task's data directory,
   `ccai-post-pgvector-lancedb/council/`.
+## Teaching devices (`[device]`, 4 items, v2 redraft 2026-10-07)
+
+Editorial analogies, not claims; none carries a number or evidence. Each is followed in the
+body by where it stops being accurate.
+
+| # | Analogy | Concept it teaches | Where it stops (stated in the body) |
+|---|---|---|---|
+| 1 | Teacher's answer key vs speed-reader | Label recall vs ann_recall | The slow read scores 0.800 against the key |
+| 2 | Library with "see also" notes | Exact scan vs HNSW | ef_search candidate list (left at 40) |
+| 3 | Nearest open coffee shops | Post-filtering, filtered-query tail | The walk is inside the index; not isolated by the bench |
+| 4 | Coarse facial features and twins | PQ on near-duplicate replicas | Mechanism differs; PQ diagnosis untested here |
+
+No new first-person anecdote was added. The `[stretch]` items are unchanged (2 register rows: the
+named verdict and the next-tests list), and they remain what holds the claims-steward at 6.

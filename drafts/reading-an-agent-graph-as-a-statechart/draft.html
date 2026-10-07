@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reading an agent graph as a statechart</title>
+<title>Reading a LangGraph Agent Graph as a Statechart: Interrupt Flow and Test Coverage</title>
 <style>
   :root {
     --background: #fdfdfc;
@@ -113,14 +113,14 @@
 <body>
 <article>
   <p class="kicker">Anchoring AI</p>
-  <h1>Reading an agent graph as a statechart</h1>
+  <h1>Reading a LangGraph Agent Graph as a Statechart: Interrupt Flow and Test Coverage</h1>
   <p class="dek">A LangGraph analyst that stops and asks which rate you mean.</p>
 
   <p>There is one place in the contact-center-ai agent where it stops and waits for a person. Ask it for "our average rate" against the synthetic Meridian Valley credit union data (seed 42, a portfolio mirror of work I did for a credit union, holding none of the client's systems or data), and "rate" could mean seven declared metrics, from <code>average_mortgage_note_rate</code> to <code>average_deposit_apy</code>. The agent asks which ones you mean before it runs any SQL.</p>
 
   <p>My background is in modeling, statecharts in particular, so I read this graph as a statechart. This post is that reading: how it maps onto the LangGraph code, where it stops fitting, and what it changed in how I check tests. LangGraph is not a statechart implementation; it has no orthogonal regions and no history states. The statechart is a way of reading the graph, and that is all I am claiming for it.</p>
 
-  <h2>The graph</h2>
+  <h2>How the Parent Graph and the Analyst Subgraph Work</h2>
 
   <p>The parent graph is in <code>agent/graph.py</code>. <code>classify</code> reads the question and writes <code>route</code>: a <code>CALL-\d{5}</code> match goes straight to <code>summarize_call</code> with no model call, anything else gets one structured LLM call. A conditional edge on <code>s["route"]</code> fans out to <code>retrieve</code>, <code>summarize_call</code> or <code>resolve_metric</code>, and all three join at <code>ground</code>, then <code>answer</code>, then END. <code>ground</code> checks every cited call id against the vector store and, on the metric route, requires SQL and declared metrics; it uses no LLM. <code>answer</code> formats what is in state and adds no facts.</p>
 
@@ -130,17 +130,21 @@
 
   <p>The exhausted re-asks run every candidate. The code comment says "rather than blend them or pick one." Blending a mortgage note rate with a deposit APY gives a number nobody at a credit union would use, and it looks like a real answer. Picking a default is a guess, and avoiding a guess is the reason the interrupt exists. Failing the run or escalating are not discussed in the design doc; my reasoning is that the person answering the interrupt already is the human, and running every candidate keeps the run moving, labels every number, and guarantees the loop exits.</p>
 
-  <h2>Where the wait lives</h2>
+  <h2>How Paused Agent States are Persisted in Postgres</h2>
 
   <p>The paused run is stored in Postgres. <code>agent/checkpoint.py</code> opens an <code>AsyncPostgresSaver</code> on the same Compose <code>db</code> the rest of the stack uses, its tables in a <code>langgraph</code> schema set through <code>search_path</code> in the connection string. The design doc rejected <code>SqliteSaver</code> as a second engine when every route already needs Postgres. The subgraph is compiled without its own checkpointer, so it inherits the parent's, which is why its interrupt surfaces in the parent run. Tests use <code>InMemorySaver</code> and <code>langgraph dev</code> keeps state in memory; neither survives a restart.</p>
 
+  <p>Think of the checkpoint as a saved game and the <code>thread_id</code> as the save slot: the run stops, the process can exit, and loading the same slot later picks up where it stopped. The analogy stops being accurate in two places. A game saves when the player asks, while LangGraph checkpoints at every super-step without being asked. And the caller mints the slot id, so two callers that share a <code>thread_id</code> share a save.</p>
+
   <p>When <code>clarify</code> pauses, the checkpoint holds the <code>AgentState</code> keys at that moment under the caller's <code>thread_id</code>, a UUID4 the caller mints. If the process restarts before anyone answers, the thread stays paused; a new process rebuilds the graph and resumes on the same <code>thread_id</code>. There is no expiry, and handling abandoned threads is still to build. I have not run a restart drill against a long-lived deployment, and none of this is in production.</p>
 
-  <h2>Reading it as a statechart</h2>
+  <h2>Mapping Graph Nodes, Edges and State to Statechart Concepts</h2>
 
   <p>Drawing one statechart state per node would put states where nothing waits. <code>classify</code>, <code>retrieve</code>, <code>ground</code> and <code>answer</code> run to completion and hand off. LangGraph checkpoints at every super-step, so each node boundary is a saved position, but no outside event can arrive at one. So I read the graph this way: <code>AgentState</code> is the extended state, and <code>term</code>, <code>candidates</code>, <code>resolved_terms</code> and <code>clarify_attempts</code> are the context the guards read. The nodes are actions. The lambdas passed to <code>add_conditional_edges</code> are the guards, which SCXML would write as the <code>cond</code> on a transition.</p>
 
   <p>Read that way, the graph has one resting state, inside <code>clarify</code>, where it waits for the human. I call it <em>AwaitingChoice</em>. Building the payload and calling <code>interrupt()</code> is its entry behavior, and the resume <code>Command</code> is the external event that moves it on. <code>disambiguate</code> is a decision point. <code>execute</code> is the action on the way out of the composite state.</p>
+
+  <p>Think of the graph as a clinic with one waiting room. Every other node is a corridor: a patient walks through it and something happens on the way, such as a form being checked or a record pulled, but nobody sits down. AwaitingChoice is the waiting room, the only place the run stays until someone outside calls it forward. The analogy stops being accurate on storage. A waiting room holds the patients themselves, while here the process holds nothing between runs and the Postgres checkpoint holds the state, which is why a restart does not empty the room.</p>
 
   <figure>
     <svg viewBox="0 0 800 500" role="img" aria-label="Statechart reading of the agent graph. classify routes either to a collapsed box for retrieve and summarize_call, or into the composite state resolve_metric. Inside resolve_metric, an initial transition enters disambiguate, a decision point. If term is set it goes to the AwaitingChoice wait state, whose entry is the clarify node calling interrupt. AwaitingChoice has an external self-transition guarded by an invalid answer with attempts at most MAX_REASKS, which is 2, and a resume transition back to disambiguate on valid choices or after the re-asks are used up. If term is None, disambiguate goes to execute and then to the subgraph's end. resolve_metric then goes to ground, answer and END.">
@@ -219,18 +223,20 @@
     <figcaption>The analyst path read as a statechart, drawn from <code>agent/graph.py</code> and <code>agent/subgraphs/analyst.py</code>. Only AwaitingChoice is a state where the run waits for an outside event. The other boxes are actions, and the bracketed labels are the router conditions, which the default Mermaid export of the graph does not show.</figcaption>
   </figure>
 
-  <h3>The re-ask loop is an external self-transition</h3>
+  <h3>Modeling the Re-ask Loop as an External Self-Transition</h3>
 
   <p>In a statechart, a state waiting for an event does not re-run its entry when the event arrives. In LangGraph, <code>clarify</code> restarts from the top on resume, so everything before <code>interrupt()</code> runs again. The design handles this with two rules: nothing with side effects comes before the <code>interrupt()</code>, and the call is never wrapped in <code>try/except</code>. Building the payload is a pure function of state, so running it twice is harmless. A statechart guarantees the entry runs once; here you make the entry idempotent yourself.</p>
 
+  <p>Think of resuming as a clerk who rereads the form from its first line after every interruption. Reading the ID field twice costs nothing, and stamping the form twice does, so everything above the <code>interrupt()</code> has to be as safe as reading. The analogy stops being accurate at memory. A clerk remembers having read the form, while the node keeps nothing from the earlier run except the checkpointed state.</p>
+
   <p>The re-ask is a real second run of the node: a new step, a new <code>interrupt()</code>, and a prompt that ends "Answer with option ids from the list." So I draw it as an external self-transition, one that leaves the state and enters it again, guarded on <code>clarify_attempts &lt;= MAX_REASKS</code>. SCXML lets a transition be declared internal or external; an internal one does not exit and re-enter its source. As far as I know, LangGraph gives you only the external kind.</p>
 
-  <h3>The composite state has one way in and one way out</h3>
+  <h3>Checking Whether the Analyst Subgraph Behaves as a Composite State</h3>
 
   <p>Reading <code>resolve_metric</code> as a composite state holds for the structure: one entry (the <code>classify</code> edge when the route is <code>resolve_metric</code>), one exit (<code>execute</code> to END, then the parent's edge to <code>ground</code>), and the loops stay inside. It breaks in three places. The parent has no transition on the composite that fires from whichever substate is active, so nothing pulls a run out of <code>clarify</code> early. There is no error or cancel edge; an exception in <code>execute</code> fails the run. And the subgraph has no data scope of its own, since it reads and writes the parent's keys. <code>Command</code> has a <code>graph</code> field that can send control to the parent from inside a subgraph; this graph does not use it, so END is the only exit.</p>
 
   <p>Coming back into <code>clarify</code> after a resume can look like a history state. It is not one. The run resumes by replaying from the checkpoint, and you cannot leave the box and return to its last active substate.</p>
-  <h2>Transition coverage</h2>
+  <h2>Checking Test Coverage for Each Transition</h2>
 
   <p>My outline for this post had a line saying the eval set checks each transition. Reading the graph as a statechart made me check that line edge by edge, and the first version of this section got it wrong in both directions. It said the re-ask boundary and the two-term loop were untested, because I was reading the design doc's test plan instead of the test file. <code>tests/agent/test_interrupt.py</code> has covered both since L1 landed on 2026-10-01, and all 38 agent tests passed when I ran them on 2026-10-06. The corrected table:</p>
 
@@ -251,23 +257,15 @@
 
   <p>So the outline line survives, narrowed. The golden set checks the main path through every edge, and the unit tests carry the guarded variants: the eval items only ever resume with valid choices. Two limits apply. The offline eval run scripts model decisions from the golden item, so it shows the edges are wired; whether the model picks them shows up only in <code>make evals-live</code>. And <code>evals/README.md</code> records known failures on two guards: g24 and g25, where label-named candidates still interrupt on a qualifier tie, and g38, a case-sensitive call-id regex. In the live runs, the interrupt check measures whether the machine enters AwaitingChoice exactly when the guards say it should.</p>
 
-  <table>
-    <thead>
-      <tr><th>Live run</th><th>Date</th><th>Interrupt (11 ambiguous)</th><th>Judge, ambiguous</th><th>Judge, all</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>First full run (<code>agent-golden-openai</code>)</td><td>2026-10-04</td><td>1.000</td><td>0.159</td><td>0.343</td></tr>
-      <tr><td>After the environment fixes</td><td>2026-10-05</td><td>1.000</td><td>0.932</td><td>0.824</td></tr>
-    </tbody>
-  </table>
+  <p>The live runs show what the interrupt check does and does not measure. The golden set goes through the real graph, MCP tools and models, and the check expects the run to pause on each of the 11 ambiguous questions. On 2026-10-04 it did: route and interrupt both scored 1.000, including on all 11 ambiguous items. The answers behind those pauses were broken: <code>sql</code> scored 0.000, and the judge gave 0.159 on the ambiguous items and 0.343 overall. The cause was the environment. A Databricks-built semantic manifest sent backtick-quoted SQL to Postgres, and two more defects surfaced behind it (marts never built after a reseed, raw tables absent). After those fixes the run on 2026-10-05 scored <code>sql</code> 1.000 and the judge 0.932 on the ambiguous items and 0.824 overall, with the interrupt check still at 1.000. That fits what the check covers: it looks at whether the graph paused, which happens before any SQL runs. Source: <code>results/evals/README.md</code>. Both runs: Intel Core i5-1038NG7 (8 cores, 15 GB RAM, Linux), python 3.14.7, agent model z-ai/glm-5.3-flash, judge anthropic/claude-opus-5.5 prompt v1, langgraph 1.2.12.</p>
 
-  <p>The low scores on 2026-10-04 came from the environment, not the agent: a Databricks-built semantic manifest sent backtick-quoted SQL to Postgres, then two more environment defects surfaced (marts never built after a reseed, raw tables absent). Source: <code>results/evals/README.md</code>. Both runs: Intel Core i5-1038NG7 (8 cores, 15 GB RAM, Linux), python 3.14.7, agent model z-ai/glm-5.3-flash, judge anthropic/claude-opus-5.5 prompt v1, langgraph 1.2.12.</p>
-
-  <h3>The trap in counting by edge</h3>
+  <h3>Why Counting Coverage by Edge Overstates What Is Tested</h3>
 
   <p>The exhausted fallthrough has no edge of its own. It leaves on the same <code>clarify</code> → <code>disambiguate</code> arrow as a valid answer; the difference is a branch inside <code>clarify</code>, and the router only checks whether <code>term</code> is cleared. A count by edge sees the valid-resume test, ticks that edge, and reports the exhausted path as covered. The self-loop has the mirror problem: one invalid answer ticks it and says nothing about what happens past the limit.</p>
 
-  <h2>The boundary test</h2>
+  <p>Think of checking a delivery route by confirming that every road on the map was driven once. A road with a toll booth that has a lane for a valid pass and a lane for a bad one counts as driven after one trip through the valid lane. The analogy stops being accurate on what picks the lane. A driver chooses a lane on the spot, while <code>clarify</code> is steered by <code>clarify_attempts</code>, a counter built up over the earlier visits, so the path past the limit only exists after several trips around the loop.</p>
+
+  <h2>Testing the Re-ask Limit: What Happens After Two Invalid Answers</h2>
 
   <p>The test that pins the re-ask boundary is committed, in <code>tests/agent/test_interrupt.py</code>. It matters because when this path is wrong the result looks like success: no error, just an answer built from every candidate that nobody chose. With <code>MAX_REASKS = 2</code>, the first ask plus two re-asks run, and the third bad answer falls through.</p>
 
@@ -289,9 +287,9 @@
 
   <p>One gap this does not close: you cannot tell from the output how a term was resolved. <code>AgentOutput</code> has no field for whether the user chose or the re-asks ran out, and a user who picks all seven in YAML order gets an identical result. Today the only way to tell is to count the <code>clarify_metric</code> interrupts in the checkpoint history for that <code>thread_id</code>, or the <code>clarify</code> runs in the LangSmith trace. The fix I have in mind is a per-term <code>resolved_by: "user" | "exhausted"</code> field in the output contract that the eval can check. I have not built it.</p>
 
-  <h2>Drawing your own</h2>
+  <h2>Building a Coverage Table for Your Own Graph in Six Steps</h2>
 
-  <p>I started with a hand sketch; the design doc had an ASCII drawing of the graph before any code existed, and it still sits in the <code>graph.py</code> docstring. Sketching by hand comes first because you name each event and guard before any tool draws it. The export can check a sketch. It cannot replace one: <code>get_graph().draw_mermaid()</code> (run 2026-10-06, langgraph 1.2.12) renders the conditional edges as dotted arrows with no guard labels, the subgraph as one opaque node, and nothing for the <code>interrupt()</code>. The conditions live elsewhere: a regex, an LLM call, the qualifier vote in a YAML file. To turn a sketch into a coverage table:</p>
+  <p>I started with a hand sketch; the design doc had an ASCII drawing of the graph before any code existed, and it still sits in the <code>graph.py</code> docstring. Sketching by hand comes first because you name each event and guard before any tool draws it. When I ran <code>get_graph().draw_mermaid()</code> on 2026-10-06 (langgraph 1.2.12), I was looking for the guards and the wait state. The export drew the conditional edges as dotted arrows with no guard labels, the subgraph as one opaque node, and nothing for the <code>interrupt()</code>. The conditions live elsewhere: a regex, an LLM call, the qualifier vote in a YAML file. So the export can check a sketch, and the sketch has to come from you. To turn a sketch into a coverage table:</p>
 
   <ol>
     <li>List every edge from the code, since the drawing is the thing you are checking. Give each conditional edge one row per value its router can return.</li>
@@ -304,7 +302,7 @@
 
   <p>I came to this from statechart tooling. Earlier in my career I built Eclipse tooling in Xtext for ECharts, a state-machine language derived from UML Statecharts. I worked on the grammar and editor; I never shipped systems written in ECharts. The comparisons in this post rest on SCXML and XState, which document their constructs publicly.</p>
 
-  <h2>Verdict</h2>
+  <h2>Verdict: When to Read a LangGraph Graph as a Statechart</h2>
 
   <p>For a LangGraph graph with a human-in-the-loop interrupt, I would read nodes as actions, router lambdas as guards and the state type as extended state, and draw one wait state per <code>interrupt()</code>. That puts the restart-on-resume behavior where you would look for it, and the interrupt check becomes a test of whether the guards put the machine into its one wait state when they should. The composite-state part depends on a single exit; it gets weaker for a graph that uses <code>Command</code>'s <code>graph</code> field to jump to the parent from inside a subgraph.</p>
 
@@ -321,6 +319,7 @@
   <p><span class="tag">[GAP: Mermaid check against graph.py]</span> Brief B3's open item: the Mermaid diagram for the GitHub Pages adaptation must be generated from or checked against <code>agent/graph.py</code>. The Mermaid source below is drawn from the transcript's reading and has not been machine-checked against the compiled graph. The inlined SVG above is drawn from the code by hand.</p>
   <p><span class="tag">[GAP: SCXML internal/external vs LangGraph]</span> "As far as I know, LangGraph gives you only the external kind" remains a hedged [stretch]: the SCXML side is sourced (w3.org/TR/scxml, internal vs external transition types), the LangGraph side is the author's recollection. Confirm against the LangGraph source or cut.</p>
   <p><span class="tag">[GAP: ECharts paragraph]</span> Author decides whether to keep it (brief B3 leaves the choice to him). Kept minimal on purpose: no dates, no scope claim, no AT&amp;T naming beyond what the brief itself states (Q15: the author will not commit to a year range or sole authorship without verifying). If it stays, check construct names against the ECharts docs before adding any keyword (Q8).</p>
+  <p><span class="tag">[NOTE: v2 redraft 2026-10-07]</span> Headings rewritten as literal and functional (voice kit v2). The live-run table is now a short account of the two runs, with the same figures re-read from results/evals/README.md (b847341). Four analogies added, each tagged [device] below and each followed by where it stops being accurate. No new first-person anecdote was added.</p>
   <p><span class="tag">[NOTE: resolved_by field]</span> Presented in the article as an idea, explicitly not built. Do not let a later edit read it as shipped.</p>
   <p><span class="tag">[NOTE: repo URL]</span> Confirm https://github.com/HendoCode/contact-center-ai is the public URL and the right link target for the Pages post.</p>
   <p><span class="tag">[NOTE: commands and code shown]</span> The test code block is verbatim from committed <code>tests/agent/test_interrupt.py</code> (helpers <code>make</code>, <code>config</code>, <code>interrupt_payload</code>, <code>RATE_IDS</code> described in prose) and the suite was run on 2026-10-06 (38 passed, offline). <code>get_graph().draw_mermaid()</code> was run on 2026-10-06 on a copy of the checkout at b847341 (langgraph 1.2.12); output in the task records and summarized in sources.md. <code>make evals-live</code> is named inline from evals/README.md; it costs money and was not run for this piece.</p>
@@ -351,6 +350,10 @@
   <p>[repo] draw_mermaid() export behavior (no guard labels, opaque subgraph, no interrupt): from-memory claim in Q11, verified by running it on 2026-10-06; sources.md local verification runs.</p>
   <p>[repo/web] Coverage procedure steps; SCXML cond. Q13; w3.org/TR/scxml.</p>
   <p>[repo/web/stretch] ECharts: built Xtext Eclipse tooling (brief B3, a committed file); ECharts described per its SourceForge page; grammar/editor work from the author's memory, no dates or scope claimed (Q8, Q15).</p>
+  <p>[device] Clinic with one waiting room, for states versus actions (AwaitingChoice as the only resting state). Editorial teaching device, not a claim; limit stated in the body (storage).</p>
+  <p>[device] Saved game and save slot, for the Postgres checkpoint and <code>thread_id</code>. Editorial teaching device, not a claim; limits stated (when saves happen, who mints the slot id).</p>
+  <p>[device] Clerk rereading the form from its first line, for restart-on-resume and the idempotent entry. Editorial teaching device, not a claim; limit stated (memory).</p>
+  <p>[device] Delivery route with a two-lane toll booth, for counting coverage by edge. Editorial teaching device, not a claim; limit stated (what picks the lane).</p>
   <p>[repo] Synthetic data: Meridian Valley credit union, seed 42, portfolio mirror holding none of the client's systems or data. Ledger and style guide.</p>
 
   <h2>Mermaid source for the GitHub Pages adaptation (unchecked against graph.py)</h2>

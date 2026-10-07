@@ -1,13 +1,13 @@
-# Piece: one-metric-three-warehouses
+# Piece: semantics-parity-check-postgres-snowflake-databricks
 
 Metadata + status for this content target. One of these folders per piece;
 many can be in flight at once, each at its own stage, for its own voice.
 The active piece is named in the orchestrator's state banner.
 
 ## Metadata
-- Slug:        one-metric-three-warehouses
+- Slug:        semantics-parity-check-postgres-snowflake-databricks
 - Voice:       stephen
-- Title:       One Metric, Three Warehouses: Five MetricFlow Metrics Compared on Postgres, Snowflake and Databricks
+- Title:       Semantics Parity Check: Five Metrics Compared Across Postgres, Snowflake and Databricks
 - Origin:      blogs/PROPOSED_POSTS.md brief B2 (contact-center-ai checkout)
 - Target:      blog post (Anchoring AI series, contact-center-ai GitHub Pages; 1,200-2,500 words)
 - Partners:    none configured (see partners/README.md; the council runs quality-editors-only)

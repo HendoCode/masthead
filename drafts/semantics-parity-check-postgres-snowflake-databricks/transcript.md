@@ -1,4 +1,4 @@
-# Interview Transcript — one-metric-three-warehouses
+# Interview Transcript — Semantics Parity Check: Five Metrics Compared Across Postgres, Snowflake and Databricks
 
 > **Answered by a model on the author's behalf, not yet verified by the author.** Every answer
 > below was produced by `claude-sonnet-5-5` playing Stephen from the claims ledger, a cited

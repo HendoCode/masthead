@@ -1,4 +1,4 @@
-# Sources & Handoff — one-metric-three-warehouses
+# Sources & Handoff — Semantics Parity Check: Five Metrics Compared Across Postgres, Snowflake and Databricks
 
 Everything the draft rests on, with citations, plus the council record and the pre-publish
 checklist. Evidence files are read-only copies of the contact-center-ai checkout at commit
